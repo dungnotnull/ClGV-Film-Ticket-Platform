@@ -162,13 +162,13 @@
 
 ## Phase 5: QR Check-in Scanner API, Loyalty & Admin Analytics
 
-- [ ] **Turnstile QR Scanner API (`src/modules/ticket`):**
-  - [ ] `POST /api/v1/tickets/verify-qr`: API soát vé cho máy quét cổng rạp CGV.
-    - [ ] Authenticate qua header `X-Scanner-Key`.
-    - [ ] Giải mã & kiểm tra HMAC signature statelessly (<50ms).
-    - [ ] Kiểm tra thời hạn hết hạn suất chiếu `exp`.
-    - [ ] Cập nhật trạng thái vé `UNUSED` -> `CHECKED_IN` atomic.
-    - [ ] Trả về thông tin xác thực (Tên phim, rạp, phòng chiếu, số ghế, thông tin combo bắp nước đính kèm).
+- [x] **Turnstile QR Scanner API (`src/modules/ticket`):**
+  - [x] `POST /api/v1/tickets/verify-qr`: API soát vé cho máy quét cổng rạp CGV.
+    - [x] Authenticate qua header `X-Scanner-Key`.
+    - [x] Giải mã & kiểm tra HMAC signature statelessly (<50ms).
+    - [x] Kiểm tra thời hạn hết hạn suất chiếu `exp`.
+    - [x] Cập nhật trạng thái vé `UNUSED` -> `CHECKED_IN` atomic.
+    - [x] Trả về thông tin xác thực (Tên phim, rạp, phòng chiếu, số ghế, thông tin combo bắp nước đính kèm).
 
 - [ ] **CGV Cultureplex Loyalty & Member Rewards (`src/modules/membership`):**
   - [ ] Engine tự động xét duyệt nâng hạng hội viên hằng năm (`MEMBER` -> `VIP` -> `VVIP`).
