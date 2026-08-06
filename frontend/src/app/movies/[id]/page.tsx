@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Play, Clock, Calendar, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { BookTicketButton } from '@/components/movie/book-ticket-button';
 
 async function getMovie(id: string) {
   try {
@@ -18,8 +19,9 @@ async function getMovie(id: string) {
   }
 }
 
-export default async function MovieDetailPage({ params }: { params: { id: string } }) {
-  const movie = await getMovie(params.id);
+export default async function MovieDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const movie = await getMovie(id);
 
   if (!movie) {
     notFound();
@@ -66,6 +68,9 @@ export default async function MovieDetailPage({ params }: { params: { id: string
                 <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {movie.durationMinutes} phút</span>
                 <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(movie.releaseDate).toLocaleDateString('vi-VN')}</span>
                 <span className="flex items-center gap-1"><Film className="w-4 h-4" /> {movie.genres?.join(', ')}</span>
+              </div>
+              <div className="pt-2">
+                <BookTicketButton movieId={movie.id} />
               </div>
             </div>
           </div>
@@ -117,7 +122,7 @@ export default async function MovieDetailPage({ params }: { params: { id: string
           </div>
 
           {/* Right Column: Showtimes */}
-          <div className="lg:col-span-1 space-y-6">
+          <div id="showtimes-section" className="lg:col-span-1 space-y-6">
             <h3 className="text-2xl font-bold border-l-4 border-primary pl-4 mb-4 uppercase">Lịch Chiếu</h3>
             
             {Object.keys(showtimesByDate).length > 0 ? (
@@ -140,7 +145,7 @@ export default async function MovieDetailPage({ params }: { params: { id: string
                           <h5 className="font-semibold text-sm mb-2 text-white">{cinemaName}</h5>
                           <div className="flex flex-wrap gap-2">
                             {stList.map((st: any) => (
-                              <Link key={st.id} href={`/booking/showtimes/${st.id}`}>
+                              <Link key={st.id} href={`/booking/seats?showtimeId=${st.id}`}>
                                 <Button variant="outline" className="border-primary/50 hover:bg-primary hover:text-white transition-colors">
                                   {new Date(st.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                                 </Button>

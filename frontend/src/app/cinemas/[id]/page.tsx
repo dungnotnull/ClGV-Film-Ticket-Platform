@@ -17,8 +17,9 @@ async function getCinema(id: string) {
   }
 }
 
-export default async function CinemaDetailPage({ params }: { params: { id: string } }) {
-  const cinema = await getCinema(params.id);
+export default async function CinemaDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const cinema = await getCinema(id);
 
   if (!cinema) {
     notFound();

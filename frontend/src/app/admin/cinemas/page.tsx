@@ -44,7 +44,7 @@ export default function AdminCinemasPage() {
 
   const [hallData, setHallData] = useState({
     name: 'Hall 1',
-    screenType: '2D'
+    screenType: 'STANDARD'
   });
 
   const fetchCinemas = async () => {
@@ -216,10 +216,12 @@ export default function AdminCinemasPage() {
                   value={hallData.screenType}
                   onChange={e => setHallData({...hallData, screenType: e.target.value})}
                 >
-                  <option value="2D">2D</option>
-                  <option value="3D">3D</option>
+                  <option value="STANDARD">2D / Standard</option>
                   <option value="IMAX">IMAX</option>
-                  <option value="4DX">4DX</option>
+                  <option value="FOUR_DX">4DX</option>
+                  <option value="SCREEN_X">ScreenX</option>
+                  <option value="GOLD_CLASS">Gold Class</option>
+                  <option value="LAMOUR_BED">L'Amour Bed</option>
                 </select>
               </div>
               <Button onClick={handleAddHall}>Thêm phòng</Button>

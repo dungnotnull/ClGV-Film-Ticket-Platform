@@ -22,14 +22,14 @@ Tài liệu này liệt kê chi tiết các màn hình (screens/pages) sẽ đư
 ## Phase 3: Real-time Seat Sync & Transient Locking
 *Luồng đặt vé cốt lõi - Chọn suất chiếu và ghế realtime qua WebSocket.*
 
-- [ ] **Màn hình Chọn Suất Chiếu** (`/booking/showtimes`) - Chọn ngày, định dạng phim và suất chiếu.
-- [ ] **Màn hình Chọn Ghế Ngồi** (`/booking/seats`) - Sơ đồ ma trận ghế động (Standard, VIP, Couple), đồng bộ trạng thái realtime (Socket.io), hiển thị đồng hồ đếm ngược 10 phút.
+- [x] **Màn hình Chọn Suất Chiếu** (`/booking/showtimes`) - Chọn ngày, định dạng phim và suất chiếu.
+- [x] **Màn hình Chọn Ghế Ngồi** (`/booking/seats`) - Sơ đồ ma trận ghế động (Standard, VIP, Couple), đồng bộ trạng thái realtime (Socket.io), hiển thị đồng hồ đếm ngược 10 phút.
 
 ## Phase 4: F&B Combos, Vouchers & Mock VNPAY Checkout
 *Xử lý bắp nước, khuyến mãi, điểm thưởng và thanh toán.*
 
-- [ ] **Màn hình Chọn Bắp Nước & Voucher** (`/booking/fb`) - Chọn combo bắp nước, áp dụng CGV Voucher / Điểm thưởng.
-- [ ] **Màn hình Thanh toán** (`/booking/checkout`) - Tóm tắt đơn hàng, chọn phương thức (Mock VNPAY, Ví CGV) và hiển thị URL/QR VNPAY.
+- [x] **Màn hình Chọn Bắp Nước & Voucher** (`/booking/fb`) - Chọn combo bắp nước, áp dụng CGV Voucher / Điểm thưởng.
+- [x] **Màn hình Thanh toán** (`/booking/checkout`) - Tóm tắt đơn hàng, chọn phương thức (Mock VNPAY, Ví CGV) và hiển thị URL/QR VNPAY.
 
 ## Phase 5: Ticketing, User Dashboard & Admin CMS
 *Quản lý vé điện tử, thông tin hội viên và Hệ thống Quản trị (Admin CMS).*

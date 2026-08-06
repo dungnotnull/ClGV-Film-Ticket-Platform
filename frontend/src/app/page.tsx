@@ -71,12 +71,12 @@ export default async function Home() {
                     />
                     {/* Glassmorphism Overlay on Hover */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col items-center justify-center gap-4 backdrop-blur-[2px]">
-                      <button className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30 hover:bg-white/40 transition-colors hover:scale-110">
+                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30 hover:bg-white/40 transition-colors hover:scale-110">
                         <Play className="w-5 h-5 text-white ml-1" />
-                      </button>
-                      <button className="px-4 py-2 bg-primary text-white text-sm font-bold uppercase rounded-full hover:bg-primary/90 flex items-center gap-2 shadow-[0_0_15px_rgba(225,29,72,0.5)] transition-transform hover:scale-105">
+                      </div>
+                      <div className="px-4 py-2 bg-primary text-white text-sm font-bold uppercase rounded-full hover:bg-primary/90 flex items-center gap-2 shadow-[0_0_15px_rgba(225,29,72,0.5)] transition-transform hover:scale-105">
                         <Ticket className="w-4 h-4" /> Mua Vé
-                      </button>
+                      </div>
                     </div>
                   </div>
                   <div className="p-4 space-y-1 bg-gradient-to-t from-black to-black/80 border-t border-white/5">
@@ -119,9 +119,9 @@ export default async function Home() {
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col items-center justify-center gap-4">
-                      <button className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30 hover:bg-white/40 transition-colors hover:scale-110">
+                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30 hover:bg-white/40 transition-colors hover:scale-110">
                         <Play className="w-5 h-5 text-white ml-1" />
-                      </button>
+                      </div>
                     </div>
                   </div>
                   <div className="p-4 space-y-1 bg-gradient-to-t from-black to-black/80 border-t border-white/5">

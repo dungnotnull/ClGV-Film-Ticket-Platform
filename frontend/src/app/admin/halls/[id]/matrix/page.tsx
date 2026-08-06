@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { api } from '@/lib/axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,8 +9,8 @@ import { Save, ChevronLeft, LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
-export default function HallMatrixBuilderPage({ params }: { params: { id: string } }) {
-  const hallId = params.id;
+export default function HallMatrixBuilderPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: hallId } = use(params);
   const [hallData, setHallData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
