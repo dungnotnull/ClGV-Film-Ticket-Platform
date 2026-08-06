@@ -14,6 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement Authentication Module (JWT Access + Refresh tokens, OAuth 2.0).
 - Construct Socket.io WebSocket server & Redis Pub/Sub integration.
 
+## [0.4.0] - 2026-08-06
+
+### Added
+- **Phase 3 Real-time Seat Sync & Distributed Redlock Engine**:
+  - Implemented `RedisService` (`src/modules/redis`) for Redlock transient seat locking (`lock:seat:{showtimeId}:{seatId}`) with 10-minute TTL and Keyspace Expiration listeners.
+  - Implemented `WebsocketGateway` (`src/modules/websocket`) for real-time room streaming (`join:showtime`, `seat:select`, `seat:deselect`, `seat:state_changed`).
+- **Phase 4 F&B Combos, CGV Vouchers, E-Wallet & Checkout Engine**:
+  - Implemented `ComboModule` (`POST /api/v1/admin/combos`, `GET /api/v1/combos`, `PUT /admin/combos/:id`, `DELETE /admin/combos/:id`).
+  - Implemented `VoucherModule` (`POST /api/v1/admin/vouchers`, `GET /api/v1/vouchers/wallet`, `POST /api/v1/vouchers/claim`).
+  - Implemented `CGVCardModule` (`POST /api/v1/cgv-card/topup`, `GET /api/v1/cgv-card/balance`).
+  - Implemented `BookingModule` (`POST /api/v1/bookings/hold-seat`, `POST /api/v1/bookings/release-seat`, `POST /api/v1/bookings/checkout`) with Pessimistic Locking (`SELECT ... FOR UPDATE`), voucher discounts, CGV Rewards points deduction/accumulation.
+  - Implemented `PaymentModule` (`POST /api/v1/payments/vnpay/create-url`, `GET /api/v1/payments/vnpay/callback`).
+  - Implemented `TicketModule` (`GET /api/v1/tickets/my-tickets`, `GET /api/v1/tickets/:id`, `POST /api/v1/tickets/verify-qr`) with cryptographic HMAC-SHA256 QR tokens.
+
 ---
 
 ## [0.3.0] - 2026-08-06

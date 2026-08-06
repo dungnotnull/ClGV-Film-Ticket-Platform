@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: clgv_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: clgv_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - clgv_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: clgv_redis
+    ports:
+      - "6380:6379"
+    restart: unless-stopped
+
+volumes:
+  clgv_postgres_data:

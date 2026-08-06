@@ -8,9 +8,14 @@ import { BannerModule } from './modules/banner/banner.module';
 import { MovieModule } from './modules/movie/movie.module';
 import { ShowtimeModule } from './modules/showtime/showtime.module';
 import { HomeModule } from './modules/home/home.module';
-import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { RedisModule } from './modules/redis/redis.module';
+import { WebsocketModule } from './modules/websocket/websocket.module';
+import { ComboModule } from './modules/combo/combo.module';
+import { VoucherModule } from './modules/voucher/voucher.module';
+import { CGVCardModule } from './modules/cgv-card/cgv-card.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { BookingModule } from './modules/booking/booking.module';
 import { TicketModule } from './modules/ticket/ticket.module';
-import { MembershipModule } from './modules/membership/membership.module';
 
 @Module({
   imports: [
@@ -18,6 +23,8 @@ import { MembershipModule } from './modules/membership/membership.module';
       isGlobal: true,
     }),
     PrismaModule,
+    RedisModule,
+    WebsocketModule,
     AuthModule,
     CityModule,
     CinemaModule,
@@ -25,9 +32,12 @@ import { MembershipModule } from './modules/membership/membership.module';
     MovieModule,
     ShowtimeModule,
     HomeModule,
-    AnalyticsModule,
+    ComboModule,
+    VoucherModule,
+    CGVCardModule,
+    PaymentModule,
+    BookingModule,
     TicketModule,
-    MembershipModule,
   ],
 })
 export class AppModule {}

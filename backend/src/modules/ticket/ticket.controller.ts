@@ -1,30 +1,36 @@
-import { Controller, Post, Body, Get, Headers, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Headers, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 import { TicketService } from './ticket.service';
-import { VerifyQrDto } from './dto/verify-qr.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
-@ApiTags('Tickets & Turnstile Check-in')
+@ApiTags('Tickets & QR Check-in Scanner')
 @Controller('tickets')
 export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
 
-  @ApiOperation({ summary: 'Soát vé qua mã QR (dành cho thiết bị máy quét turnstile / nhân viên soát vé)' })
-  @ApiHeader({ name: 'X-Scanner-Key', required: false, description: 'Mã xác thực thiết bị máy quét' })
-  @Post('verify-qr')
-  async verifyQr(
-    @Body() verifyQrDto: VerifyQrDto,
-    @Headers('x-scanner-key') scannerKey?: string,
-  ) {
-    return this.ticketService.verifyQrToken(verifyQrDto, scannerKey);
+  @Get('my-tickets')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Khách hàng xem danh sách vé điện tử đã mua' })
+  async getMyTickets(@Req() req: any) {
+    return this.ticketService.getUserTickets(req.user.id);
   }
 
-  @ApiOperation({ summary: 'Khách hàng lấy danh sách vé điện tử của mình' })
-  @ApiBearerAuth()
+  @Get(':id')
   @UseGuards(JwtAuthGuard)
-  @Get('my-tickets')
-  async getMyTickets(@CurrentUser() user: any) {
-    return this.ticketService.getMyTickets(user.id);
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Xem chi tiết vé điện tử & hóa đơn' })
+  async getTicketDetail(@Req() req: any, @Param('id') id: string) {
+    return this.ticketService.getTicketDetail(id, req.user.id);
+  }
+
+  @Post('verify-qr')
+  @ApiOperation({ summary: 'Máy quét cổng soát vé QR rạp CGV (HMAC Validation)' })
+  @ApiHeader({ name: 'X-Scanner-Key', description: 'Secret Key cấp cho thiết bị máy quét turnstile' })
+  async verifyQrTicket(
+    @Headers('x-scanner-key') scannerKey: string,
+    @Body('qrToken') qrToken: string,
+  ) {
+    return this.ticketService.verifyQrTicket(scannerKey, qrToken);
   }
 }

@@ -29,7 +29,9 @@
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.3.0",
+    "@nestjs/platform-socket.io": "^10.3.0",
     "@nestjs/swagger": "^7.1.17",
+    "@nestjs/websockets": "^10.3.0",
     "@prisma/client": "^5.8.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
@@ -40,7 +42,8 @@
     "passport-local": "^1.0.0",
     "qrcode": "^1.5.3",
     "reflect-metadata": "^0.1.14",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.7.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.3.0",

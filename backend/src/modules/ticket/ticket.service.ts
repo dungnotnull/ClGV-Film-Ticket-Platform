@@ -1,8 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
-import { TicketStatus } from '@prisma/client';
-import { VerifyQrDto } from './dto/verify-qr.dto';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class TicketService {
@@ -11,98 +10,148 @@ export class TicketService {
     private readonly configService: ConfigService,
   ) {}
 
-  // Soát vé cổng rạp turnstile QR Check-in
-  async verifyQrToken(verifyQrDto: VerifyQrDto, scannerKeyHeader?: string) {
-    const validScannerKey = this.configService.get<string>('SCANNER_SECRET_KEY') || 'clgv_scanner_secret_key_2026';
-    if (scannerKeyHeader && scannerKeyHeader !== validScannerKey) {
-      throw new UnauthorizedException({
-        code: 'INVALID_SCANNER_KEY',
-        message: 'Khóa thiết bị soát vé (X-Scanner-Key) không hợp lệ',
-      });
-    }
-
-    const ticket = await this.prisma.ticket.findFirst({
-      where: { qrToken: verifyQrDto.qrToken },
+  async getUserTickets(userId: string) {
+    const tickets = await this.prisma.ticket.findMany({
+      where: { booking: { userId } },
       include: {
         booking: {
           include: {
-            user: { select: { id: true, fullName: true, phone: true, membershipTier: true } },
             showtime: {
-              include: {
-                movie: { select: { title: true, ageRating: true, posterUrl: true } },
-                cinema: { select: { name: true } },
-                hall: { select: { name: true, screenType: true } },
-              },
+              include: { movie: true, cinema: true, hall: true },
             },
-          },
-        },
-      },
-    });
-
-    if (!ticket) {
-      throw new NotFoundException({
-        code: 'TICKET_NOT_FOUND',
-        message: 'Vé điện tử không tồn tại hoặc mã QR không hợp lệ',
-      });
-    }
-
-    if (ticket.status === TicketStatus.CHECKED_IN) {
-      throw new BadRequestException({
-        code: 'TICKET_ALREADY_USED',
-        message: 'Vé này đã được check-in sử dụng trước đó',
-      });
-    }
-
-    if (ticket.status === TicketStatus.CANCELLED || ticket.status === TicketStatus.EXPIRED) {
-      throw new BadRequestException({
-        code: 'TICKET_INVALID_STATUS',
-        message: `Vé không thể sử dụng do trạng thái là ${ticket.status}`,
-      });
-    }
-
-    // Cập nhật trạng thái vé sang CHECKED_IN
-    const updatedTicket = await this.prisma.ticket.update({
-      where: { id: ticket.id },
-      data: { status: TicketStatus.CHECKED_IN },
-    });
-
-    return {
-      success: true,
-      message: 'Xác thực và Check-in vé thành công!',
-      ticketId: updatedTicket.id,
-      seatId: ticket.seatId,
-      status: updatedTicket.status,
-      checkedInAt: updatedTicket.updatedAt,
-      movie: ticket.booking.showtime.movie,
-      cinema: ticket.booking.showtime.cinema.name,
-      hall: ticket.booking.showtime.hall.name,
-      startTime: ticket.booking.showtime.startTime,
-      user: ticket.booking.user,
-    };
-  }
-
-  // Khách hàng lấy danh sách vé điện tử đã mua
-  async getMyTickets(userId: string) {
-    return this.prisma.ticket.findMany({
-      where: {
-        booking: {
-          userId,
-        },
-      },
-      include: {
-        booking: {
-          include: {
-            showtime: {
-              include: {
-                movie: { select: { id: true, title: true, posterUrl: true, durationMinutes: true, ageRating: true } },
-                cinema: { select: { id: true, name: true, address: true } },
-                hall: { select: { id: true, name: true, screenType: true } },
-              },
+            combos: {
+              include: { combo: true },
             },
           },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    return tickets.map((t) => ({
+      ticketId: t.id,
+      seatId: t.seatId,
+      status: t.status,
+      qrToken: t.qrToken,
+      movieTitle: t.booking.showtime.movie.title,
+      posterUrl: t.booking.showtime.movie.posterUrl,
+      cinemaName: t.booking.showtime.cinema.name,
+      hallName: t.booking.showtime.hall.name,
+      startTime: t.booking.showtime.startTime,
+      endTime: t.booking.showtime.endTime,
+      bookingStatus: t.booking.status,
+      combos: t.booking.combos,
+    }));
+  }
+
+  async getTicketDetail(id: string, userId: string) {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      include: {
+        booking: {
+          include: {
+            showtime: {
+              include: { movie: true, cinema: true, hall: true },
+            },
+            combos: {
+              include: { combo: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!ticket || ticket.booking.userId !== userId) {
+      throw new NotFoundException(`Không tìm thấy vé ID: ${id}`);
+    }
+
+    return ticket;
+  }
+
+  /**
+   * Scanner turnstile validation (POST /tickets/verify-qr)
+   */
+  async verifyQrTicket(scannerKey: string, qrToken: string) {
+    const expectedKey = this.configService.get<string>('TURNSTILE_SECRET_KEY', 'turnstile-secret-key-2026');
+    if (scannerKey !== expectedKey) {
+      throw new UnauthorizedException('Header X-Scanner-Key không hợp lệ');
+    }
+
+    const parts = qrToken.split('.');
+    if (parts.length !== 3 || parts[0] !== 'TKT') {
+      throw new UnprocessableEntityException({
+        code: 'INVALID_HMAC_SIGNATURE',
+        message: 'Mã QR không khớp định dạng vé ClGV',
+      });
+    }
+
+    const payloadBase64 = parts[1];
+    const signature = parts[2];
+
+    const hmacSecret = this.configService.get<string>('TICKET_HMAC_SECRET', 'clgv-ticket-secret-key-2026');
+    const expectedSig = crypto.createHmac('sha256', hmacSecret).update(payloadBase64).digest('base64url');
+
+    if (signature !== expectedSig) {
+      throw new UnprocessableEntityException({
+        code: 'INVALID_HMAC_SIGNATURE',
+        message: 'Chữ ký số HMAC QR vé không hợp lệ hoặc đã bị chỉnh sửa',
+      });
+    }
+
+    const payloadJson = Buffer.from(payloadBase64, 'base64url').toString('utf-8');
+    const payload = JSON.parse(payloadJson);
+
+    // Kiểm tra Hạn hết giờ suất chiếu
+    const nowUnix = Math.floor(Date.now() / 1000);
+    if (payload.exp && nowUnix > payload.exp) {
+      throw new UnprocessableEntityException({
+        code: 'TICKET_EXPIRED',
+        message: 'Vé đã hết hạn sử dụng do suất chiếu đã kết thúc',
+      });
+    }
+
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id: payload.ticketId },
+      include: {
+        booking: {
+          include: {
+            showtime: { include: { movie: true, hall: true, cinema: true } },
+            combos: { include: { combo: true } },
+          },
+        },
+      },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException('Vé không tồn tại trong cơ sở dữ liệu');
+    }
+
+    if (ticket.status === 'CHECKED_IN') {
+      throw new UnprocessableEntityException({
+        code: 'TICKET_ALREADY_USED',
+        message: 'Vé này đã được soát và check-in vào rạp trước đó',
+      });
+    }
+
+    // Cập nhật vé sang CHECKED_IN
+    const updated = await this.prisma.ticket.update({
+      where: { id: ticket.id },
+      data: { status: 'CHECKED_IN' },
+    });
+
+    return {
+      verified: true,
+      ticketId: updated.id,
+      movieTitle: ticket.booking.showtime.movie.title,
+      cinemaName: ticket.booking.showtime.cinema.name,
+      hallName: ticket.booking.showtime.hall.name,
+      seatId: ticket.seatId,
+      status: 'CHECKED_IN',
+      checkedInAt: updated.updatedAt,
+      combos: ticket.booking.combos.map((c) => ({
+        name: c.combo.title,
+        quantity: c.quantity,
+      })),
+    };
   }
 }

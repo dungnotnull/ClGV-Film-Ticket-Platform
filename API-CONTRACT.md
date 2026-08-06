@@ -361,14 +361,46 @@ Base URL: `http://localhost:4000/api/v1`
 
 ---
 
-### 2.5 F&B Combos Module (`/combos`)
+### 2.5 F&B Combos Module (`/combos`, `/admin/combos`)
 
 #### `GET /combos`
 * **Response `200 OK`**: Array of popcorn & drink combos with prices and image URLs.
 
+#### `POST /admin/combos` *(Admin Only)*
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Request Payload**: `{ "title": "CGV Combo 1", "description": "1 Bắp Ngọt + 2 Nước Ngọt", "price": 119000 }`
+
 ---
 
-### 2.6 Ticket & QR Scanner Check-in (`/tickets`)
+### 2.6 CGV Vouchers & Coupons Module (`/vouchers`, `/admin/vouchers`)
+
+#### `POST /admin/vouchers` *(Admin Only)*
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Request Payload**: `{ "code": "CGV50K", "title": "Giảm 50K", "discountType": "FIXED_AMOUNT", "discountValue": 50000, "minOrderValue": 200000, "expiresAt": "2026-12-31T23:59:59.000Z" }`
+
+#### `GET /vouchers/wallet`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Response `200 OK`**: User's stored active vouchers.
+
+#### `POST /vouchers/claim`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Request Payload**: `{ "code": "CGV50K" }`
+
+---
+
+### 2.7 CGV E-Wallet & Member Card (`/cgv-card`)
+
+#### `POST /cgv-card/topup`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Request Payload**: `{ "amount": 500000, "paymentMethod": "ATM" }`
+
+#### `GET /cgv-card/balance`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Response `200 OK`**: Balance amount in VND, loyalty points, and transaction history.
+
+---
+
+### 2.8 Ticket & QR Scanner Check-in (`/tickets`)
 
 #### `GET /tickets/my-tickets`
 * **Headers**: `Authorization: Bearer <JWT>`
