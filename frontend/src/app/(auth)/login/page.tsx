@@ -29,7 +29,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await api.post('/auth/login', { email, password });
+      const res: any = await api.post('/auth/login', { email, password });
       
       if (res.success) {
         const { user, accessToken, refreshToken } = res.data;

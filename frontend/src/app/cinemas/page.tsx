@@ -19,11 +19,14 @@ export default async function CinemasPage() {
 
   // Group cinemas by city
   const cinemasByCity = cinemas.reduce((acc: any, cinema: any) => {
-    const city = cinema.city || 'Khác';
-    if (!acc[city]) {
-      acc[city] = [];
+    const cityName = (typeof cinema.city === 'object' && cinema.city !== null) 
+      ? cinema.city.name 
+      : cinema.city || 'Khác';
+      
+    if (!acc[cityName]) {
+      acc[cityName] = [];
     }
-    acc[city].push(cinema);
+    acc[cityName].push(cinema);
     return acc;
   }, {});
 

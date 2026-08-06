@@ -37,7 +37,7 @@ export default function RegisterPage() {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await api.post('/auth/register', formData);
+      const res: any = await api.post('/auth/register', formData);
       
       if (res.success) {
         const { user, accessToken, refreshToken } = res.data;

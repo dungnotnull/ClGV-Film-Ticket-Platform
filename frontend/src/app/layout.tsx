@@ -1,9 +1,14 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, Outfit } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/sonner';
+
+const outfit = Outfit({
+  variable: '--font-outfit',
+  subsets: ['latin'],
+});
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -26,12 +31,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex flex-col">
-        <Header />
-        <main className="flex-1 bg-background">{children}</main>
-        <Footer />
-        <Toaster position="bottom-right" />
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${outfit.className} h-full antialiased dark`}>
+      <body className="min-h-full flex flex-col relative bg-black text-foreground">
+        {/* Global Ambient Lights */}
+        <div className="fixed top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[150px] pointer-events-none z-0" />
+        <div className="fixed bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px] pointer-events-none z-0" />
+        <div className="fixed top-[40%] left-[30%] w-[300px] h-[300px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none z-0" />
+        
+        <div className="relative z-10 flex flex-col min-h-full">
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <Toaster position="bottom-right" />
+        </div>
       </body>
     </html>
   );
