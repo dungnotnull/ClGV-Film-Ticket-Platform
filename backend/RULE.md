@@ -9,8 +9,9 @@ Tài liệu này định nghĩa các nguyên tắc **bắt buộc và tối thư
 Trước khi bắt đầu bất kỳ thao tác nào, BẮT BUỘC phải đọc và tuân thủ 5 tài liệu nguồn sau:
 
 1. 📄 **[API-CONTRACT.md](file:///d:/ClGV-Film-Ticket-Platform/API-CONTRACT.md)**
-   * Hợp đồng giao tiếp chính thức giữa Frontend và Backend.
+   * Hợp đồng giao tiếp chính thức giữa Frontend và Backend (Single Source of Truth).
    * Mọi Endpoint, Payload Request, Response Data và HTTP Status Code phải khớp **100%**.
+   * 🚨 **QUY TẮC CẬP NHẬT BẮT BUỘC**: Khi có bất kỳ sự thay đổi, thêm mới hoặc điều chỉnh nào về Endpoint path, Query params, Request DTO, Response data wrapper hoặc WebSocket event, người thực thi **BẮT BUỘC phải đọc và cập nhật file [API-CONTRACT.md](file:///d:/ClGV-Film-Ticket-Platform/API-CONTRACT.md) trước hoặc ngay sau khi có thay đổi**, đảm bảo hợp đồng luôn phản ánh chính xác trạng thái mã nguồn hiện tại.
    * Toàn bộ giá trị tiền tệ (vé, bắp nước, tổng đơn) phải là **VND (Việt Nam Đồng)** dưới dạng **số nguyên (Integer)**, không có thập phân.
 
 2. 📄 **[PROJECT-DETAIL.md](file:///d:/ClGV-Film-Ticket-Platform/PROJECT-DETAIL.md)**
@@ -86,7 +87,7 @@ Trước khi bắt đầu bất kỳ thao tác nào, BẮT BUỘC phải đọc 
 
 Trước khi xác nhận hoàn thành task:
 1. **Kiểm tra Compile & Lint**: Đảm bảo code compile sạch sẽ, không có lỗi TypeScript hay ESLint (`npm run build` / `npm test`).
-2. **Kiểm tra API mâu thuẫn**: Đảm bảo không làm hỏng hoặc thay đổi bất kỳ API hiện có nào mà không báo trước.
+2. **Cập nhật API-CONTRACT.md (BẮT BUỘC nếu có thay đổi API)**: Đảm bảo toàn bộ các thay đổi hoặc thêm mới về endpoint, query params, request body DTOs, response wrapper hoặc error status codes đã được đọc và cập nhật chính xác 100% vào file [API-CONTRACT.md](file:///d:/ClGV-Film-Ticket-Platform/API-CONTRACT.md).
 3. **Cập nhật Log theo dõi (BẮT BUỘC)**:
    * Cập nhật file [backend/DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md](file:///d:/ClGV-Film-Ticket-Platform/backend/DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md).
    * Đánh dấu `[x]` vào các task đã hoàn thành.
