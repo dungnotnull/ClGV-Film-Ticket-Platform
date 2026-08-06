@@ -8,6 +8,14 @@ import { BannerModule } from './modules/banner/banner.module';
 import { MovieModule } from './modules/movie/movie.module';
 import { ShowtimeModule } from './modules/showtime/showtime.module';
 import { HomeModule } from './modules/home/home.module';
+import { RedisModule } from './modules/redis/redis.module';
+import { WebsocketModule } from './modules/websocket/websocket.module';
+import { ComboModule } from './modules/combo/combo.module';
+import { VoucherModule } from './modules/voucher/voucher.module';
+import { CGVCardModule } from './modules/cgv-card/cgv-card.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { BookingModule } from './modules/booking/booking.module';
+import { TicketModule } from './modules/ticket/ticket.module';
 
 @Module({
   imports: [
@@ -15,6 +23,8 @@ import { HomeModule } from './modules/home/home.module';
       isGlobal: true,
     }),
     PrismaModule,
+    RedisModule,
+    WebsocketModule,
     AuthModule,
     CityModule,
     CinemaModule,
@@ -22,6 +32,12 @@ import { HomeModule } from './modules/home/home.module';
     MovieModule,
     ShowtimeModule,
     HomeModule,
+    ComboModule,
+    VoucherModule,
+    CGVCardModule,
+    PaymentModule,
+    BookingModule,
+    TicketModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

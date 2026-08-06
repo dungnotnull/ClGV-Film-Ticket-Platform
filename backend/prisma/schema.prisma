@@ -78,6 +78,21 @@ enum BannerStatus {
   INACTIVE
 }
 
+enum ComboStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum CardTxType {
+  TOPUP
+  SPEND
+}
+
 model User {
   id              String         @id @default(uuid())
   email           String         @unique
@@ -92,9 +107,11 @@ model User {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
-  refreshTokens   RefreshToken[]
-  bookings        Booking[]
-  reviews         MovieReview[]
+  refreshTokens    RefreshToken[]
+  bookings         Booking[]
+  reviews          MovieReview[]
+  userVouchers     UserVoucher[]
+  cardTransactions CGVCardTransaction[]
 
   @@map("users")
 }
@@ -234,22 +251,104 @@ model Banner {
   @@map("banners")
 }
 
-model Booking {
-  id            String        @id @default(uuid())
-  userId        String
-  showtimeId    String
-  totalAmount   Int           // In VND Integer
-  status        BookingStatus @default(PENDING_PAYMENT)
-  paymentMethod String?       // VNPAY, CGV_CARD
-  paymentUrl    String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+model Combo {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  imageUrl    String?
+  price       Int         // In VND Integer
+  status      ComboStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  showtime Showtime @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+  bookingCombos BookingCombo[]
+
+  @@map("combos")
+}
+
+model Voucher {
+  id             String       @id @default(uuid())
+  code           String       @unique
+  title          String
+  discountType   DiscountType @default(FIXED_AMOUNT)
+  discountValue  Int          // Percentage (1-100) or Fixed Amount in VND
+  minOrderValue  Int          @default(0)
+  maxDiscountAmount Int?
+  expiresAt      DateTime
+  status         BannerStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  userVouchers UserVoucher[]
+  bookings     Booking[]
+
+  @@map("vouchers")
+}
+
+model UserVoucher {
+  id        String    @id @default(uuid())
+  userId    String
+  voucherId String
+  isUsed    Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, voucherId])
+  @@map("user_vouchers")
+}
+
+model CGVCardTransaction {
+  id          String     @id @default(uuid())
+  userId      String
+  amount      Int        // In VND Integer
+  type        CardTxType
+  description String
+  createdAt   DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("cgv_card_transactions")
+}
+
+model Booking {
+  id             String        @id @default(uuid())
+  userId         String
+  showtimeId     String
+  totalAmount    Int           // In VND Integer
+  discountAmount Int           @default(0)
+  cgvPointsUsed  Int           @default(0)
+  cgvPointsEarned Int          @default(0)
+  voucherId      String?
+  status         BookingStatus @default(PENDING_PAYMENT)
+  paymentMethod  String?       // VNPAY, CGV_CARD
+  paymentUrl     String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  showtime Showtime      @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+  voucher  Voucher?      @relation(fields: [voucherId], references: [id], onDelete: SetNull)
   tickets  Ticket[]
+  combos   BookingCombo[]
 
   @@map("bookings")
+}
+
+model BookingCombo {
+  id        String   @id @default(uuid())
+  bookingId String
+  comboId   String
+  quantity  Int      @default(1)
+  price     Int      // Unit price at purchase in VND
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  combo   Combo   @relation(fields: [comboId], references: [id], onDelete: Cascade)
+
+  @@map("booking_combos")
 }
 
 model Ticket {
