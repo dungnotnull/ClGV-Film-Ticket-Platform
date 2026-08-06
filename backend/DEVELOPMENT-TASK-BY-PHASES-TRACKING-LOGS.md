@@ -30,12 +30,17 @@
 
 ## Phase 2: Core Cinema, Showtime & Catalog API (CGV Standards)
 
-### 2.1. Role Admin (System & Theater Management)
+- [ ] **Cities & Location Management (`src/modules/city`):**
+  - [ ] Định nghĩa schema `City` (tên thành phố/khu vực: TP.HCM, Hà Nội, Đà Nẵng, Cần Thơ..., mã code, thứ tự hiển thị).
+  - [ ] `POST /api/v1/admin/cities`: API Admin tạo thành phố/khu vực mới.
+  - [ ] `GET /api/v1/cities`: API lấy danh sách toàn bộ thành phố/khu vực kèm số lượng rạp.
+  - [ ] `PUT /api/v1/admin/cities/:id`: API Admin cập nhật thông tin thành phố.
+  - [ ] `DELETE /api/v1/admin/cities/:id`: API Admin xóa thành phố.
 
 - [ ] **Cinema Clusters & Special Experience Rooms (`src/modules/cinema`):**
   - [ ] Định nghĩa schema `Cinema`, `Hall`, `FormatType` (`2D`, `3D`, `IMAX`, `4DX`, `SCREENX`, `GOLD_CLASS`, `LAMOUR_BED`).
-  - [ ] `POST /api/v1/cinemas`: API tạo mới cụm rạp CGV (Khu vực/Thành phố, địa chỉ, GPS location, hotline, tiện ích rạp như Parking, Popcorn Bar, L'Amour).
-  - [ ] `GET /api/v1/cinemas`: API lấy danh sách cụm rạp (hỗ trợ filter theo `city`, `format`, `amenities`, pagination).
+  - [ ] `POST /api/v1/cinemas`: API tạo mới cụm rạp CGV (gắn với `cityId`, tên cụm rạp, địa chỉ, GPS location, hotline, tiện ích rạp như Parking, Popcorn Bar, L'Amour).
+  - [ ] `GET /api/v1/cinemas`: API lấy danh sách cụm rạp (hỗ trợ filter động theo `cityId`, `format`, `amenities`, pagination).
   - [ ] `GET /api/v1/cinemas/:id`: API lấy chi tiết cụm rạp và các tiện ích.
   - [ ] `PUT /api/v1/cinemas/:id`: API cập nhật thông tin cụm rạp.
   - [ ] `DELETE /api/v1/cinemas/:id`: API xóa cụm rạp.
@@ -49,9 +54,16 @@
   - [ ] `GET /api/v1/halls/:id/matrix`: API lấy sơ đồ ma trận ghế phòng chiếu.
   - [ ] `DELETE /api/v1/halls/:id`: API xóa phòng chiếu.
 
+- [ ] **Admin Promotional Banners & CMS (`src/modules/banner`):**
+  - [ ] Định nghĩa schema `Banner` (tiêu đề, hình ảnh, link liên kết, thứ tự hiển thị, status `ACTIVE`/`INACTIVE`).
+  - [ ] `POST /api/v1/admin/banners`: API Admin tạo banner/slider mới.
+  - [ ] `GET /api/v1/admin/banners`: API Admin quản lý danh sách banner.
+  - [ ] `PUT /api/v1/admin/banners/:id`: API Admin sửa thông tin banner.
+  - [ ] `DELETE /api/v1/admin/banners/:id`: API Admin xóa banner.
+
 - [ ] **Movie Catalog & Special Formats (`src/modules/movie`):**
   - [ ] Định nghĩa schema `Movie` (Tiêu đề tiếng Việt/Anh, đạo diễn, diễn viên, thể loại, thời lượng, ngày khởi chiếu, posterUrl, trailerUrl, ageRating `P`/`K`/`T13`/`T16`/`T18`, language `SUB`/`DUB`/`THUYT_MINH`, status `NOW_SHOWING`/`COMING_SOON`/`SNEAK_SHOW`).
-  - [ ] `POST /api/v1/admin/movies`: API Admin tạo phim mới.
+  - [ ] `POST /api/v1/admin/movies`: API Admin tạo phim mới (hiển thị ngay lên trang chủ).
   - [ ] `PUT /api/v1/admin/movies/:id`: API Admin sửa thông tin phim.
   - [ ] `DELETE /api/v1/admin/movies/:id`: API Admin xóa/ngừng chiếu phim.
 
@@ -65,7 +77,8 @@
 
 ### 2.2. Discovery & Shopping (Role Customer)
 
-- [ ] **Home Page & Promotional Sliders (`src/modules/home`):**
+- [ ] **Dynamic Home Page & Promotional Sliders (`src/modules/home`):**
+  - [ ] `GET /api/v1/home`: API tổng hợp dữ liệu trang chủ động (tự động lấy danh sách Banner active, Phim đang chiếu, Phim sắp chiếu, Cụm rạp nổi bật theo `cityId`, và các chương trình khuyến mãi do Admin đăng).
   - [ ] `GET /api/v1/home/banners`: API lấy danh sách banner khuyến mãi / phim hot slider trang chủ.
   - [ ] `GET /api/v1/home/now-showing`: API lấy danh sách phim đang chiếu nổi bật.
   - [ ] `GET /api/v1/home/coming-soon`: API lấy danh sách phim sắp chiếu.

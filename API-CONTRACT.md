@@ -93,11 +93,31 @@ Base URL: `http://localhost:4000/api/v1`
 
 ---
 
-### 2.2 Cinemas & Halls Module (`/cinemas`, `/halls`)
+### 2.2 Cities & Dynamic Homepage Aggregator (`/cities`, `/home`)
+
+#### `GET /cities`
+* **Response `200 OK`**: Returns list of available cities/locations (TP.HCM, Hà Nội, Đà Nẵng, Cần Thơ, etc.) with cinema counts.
+  ```json
+  {
+    "success": true,
+    "data": [
+      { "id": "city_hcm", "name": "TP. Hồ Chí Minh", "code": "HCM", "cinemaCount": 12 },
+      { "id": "city_hn", "name": "Hà Nội", "code": "HN", "cinemaCount": 8 }
+    ]
+  }
+  ```
+
+#### `GET /home`
+* **Query Parameters**: `cityId` (optional)
+* **Response `200 OK`**: Dynamic homepage data created by Admin (active banners, now showing movies, coming soon movies, featured cinemas in selected city, active promotions).
+
+---
+
+### 2.3 Cinemas & Halls Module (`/cinemas`, `/halls`)
 
 #### `GET /cinemas`
-* **Query Parameters**: `city` (optional), `page`, `limit`
-* **Response `200 OK`**: List of cinema clusters with address, total halls, amenities.
+* **Query Parameters**: `cityId` (optional), `page`, `limit`
+* **Response `200 OK`**: List of cinema clusters filtered dynamically by city with address, total halls, amenities.
 
 #### `GET /halls/{id}/matrix`
 * **Response `200 OK`**:

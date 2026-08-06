@@ -8,8 +8,10 @@
 1. **High-concurrency flash-sales**: Handling thousands of simultaneous seat selections when popular blockbuster tickets drop.
 2. **Double-booking prevention**: Guaranteeing atomic seat locks across micro-seconds without database deadlocks.
 3. **Dynamic hall matrix configuration**: Supporting irregular seating layouts (varying rows, columns, aisles, VIP/Couple seating tiers, accessible seats).
-4. **Mock VNPAY & QR Generation**: Streamlined checkout using a **Mock VNPAY Payment Gateway** sandbox flow and a **Mock QR Code generation library** (`qrcode` / `qrcode.react`) for payment QR codes and stateless HMAC ticket validation.
-5. **Polished CGV-Inspired UI**: Built with **Next.js 15 (App Router)**, featuring a premium dark-themed interface, interactive seat matrix, micro-animations, and responsive design.
+4. **Dynamic Multi-Cinema & Multi-City Architecture**: Managing multiple cinema clusters across various cities (TP.HCM, Hà Nội, Đà Nẵng, Cần Thơ, etc.), allowing users to easily switch cities and find nearest cinema locations.
+5. **Admin CMS Dynamic Publishing**: Full backoffice CMS enabling admins to create and publish movies, cinema clusters, cities, halls, showtimes, banners, combos, and promotions. All admin entries immediately and dynamically reflect on the user-facing Homepage (`/home`) in real-time.
+6. **Mock VNPAY & QR Generation**: Streamlined checkout using a **Mock VNPAY Payment Gateway** sandbox flow and a **Mock QR Code generation library** (`qrcode` / `qrcode.react`) for payment QR codes and stateless HMAC ticket validation.
+7. **Polished CGV-Inspired UI**: Built with **Next.js 15 (App Router)**, featuring a premium dark-themed interface, interactive seat matrix, micro-animations, and responsive design.
 
 ---
 

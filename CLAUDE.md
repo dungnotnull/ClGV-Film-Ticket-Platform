@@ -7,6 +7,8 @@ Welcome to **ClGV - Film Ticket Platform**. This document serves as the global s
 ## 1. Project Overview & Core Requirements
 
 **ClGV** is a high-concurrency, multi-role film ticket booking platform inspired by CGV. The system addresses critical distributed systems challenges:
+* **Dynamic Multi-Cinema & Multi-City Architecture**: Flexible catalog structure supporting multiple cinema chains/clusters categorized by cities/regions (e.g., TP.HCM, Hà Nội, Đà Nẵng, Cần Thơ). Each cinema contains multiple screening halls with dynamic room matrix layouts.
+* **Admin CMS Dynamic Publishing**: Complete Admin CMS where administrators create, edit, delete, and publish movies, cinema clusters, cities, halls, showtimes, banners, combos, and promotions. All Admin modifications dynamically update and reflect in real-time on the user-facing Homepage (`/home`) and discovery pages.
 * **Frontend Architecture**: Built on **Next.js 15 (App Router)**, React 19, Tailwind CSS, and Shadcn UI. Features a highly polished, premium CGV-inspired UI/UX design system with dark mode aesthetics, interactive seat picker grid, micro-animations, and responsive layouts.
 * **Backend Architecture**: Built on **Node.js** (NestJS / Express TypeScript), PostgreSQL 16, Prisma/TypeORM, and Redis 7.
 * **Payment Integration**: Uses **Mock VNPAY Payment Gateway** (Sandbox flow) and a **Mock QR Code Generation Library** (`qrcode` / `qrcode.react`) for payment QR codes and ticket verification.
