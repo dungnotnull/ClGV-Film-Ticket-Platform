@@ -16,13 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.0] - 2026-08-06
+## [0.2.0] - 2026-08-06
 
 ### Added
-- **Project Structure & Rules**: Created unified multi-agent governance and system architecture file [CLAUDE.md](file:///d:/ClGV-Film-Ticket-Platform/CLAUDE.md).
-- **Detailed Specification**: Authored comprehensive project specifications in [PROJECT-DETAIL.md](file:///d:/ClGV-Film-Ticket-Platform/PROJECT-DETAIL.md), detailing customer booking workflows, admin tools, two-tier Redlock concurrency engines, and HMAC-SHA256 QR ticket generation.
-- **API Contract (Source of Truth)**: Defined strict REST endpoints and Socket.io protocol payload specifications in [API-CONTRACT.md](file:///d:/ClGV-Film-Ticket-Platform/API-CONTRACT.md).
-- **Product Roadmap**: Created 6-phase development roadmap in [docs/ROADMAP.md](file:///d:/ClGV-Film-Ticket-Platform/docs/ROADMAP.md).
-- **Backend Developer Guidelines**: Created backend sub-agent context in [backend/CLAUDE.md](file:///d:/ClGV-Film-Ticket-Platform/backend/CLAUDE.md).
-- **Backend Tracking Logs**: Established phase task tracking log [backend/DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md](file:///d:/ClGV-Film-Ticket-Platform/backend/DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md).
-- **Backend Issues Tracking**: Created issue log [backend/ISSUES-LIST-TRACKING.md](file:///d:/ClGV-Film-Ticket-Platform/backend/ISSUES-LIST-TRACKING.md).
+- **Backend Architecture Setup (Phase 1 & Phase 2)**: Built NestJS TypeScript backend in `/backend`.
+- **Database Prisma Models & Seeder**: Created complete PostgreSQL schema for `User`, `City`, `Cinema`, `Hall`, `Movie`, `Showtime`, `ShowtimeSeat`, `Banner`, `Booking`, `Ticket`, `MovieReview`. Included database seeder `prisma/seed.ts`.
+- **Authentication & Roles Module**: Implemented JWT Access/Refresh tokens, Password hashing with bcrypt, Passport JWT strategy, `@Roles()` decorator, and `RolesGuard`.
+- **Cities & Location Management Module**: Implemented `POST /api/v1/admin/cities`, `GET /api/v1/cities`, `PUT /api/v1/admin/cities/:id`, `DELETE /api/v1/admin/cities/:id`.
+- **Cinemas & Halls Matrix Module**: Implemented `POST /api/v1/cinemas`, `GET /api/v1/cinemas`, `POST /api/v1/halls`, `PUT /api/v1/halls/:id/matrix`, `GET /api/v1/halls/:id/matrix`.
+- **Movie Catalog Module**: Implemented `POST /api/v1/admin/movies`, `GET /api/v1/movies`, `GET /api/v1/movies/:id`.
+- **Banners CMS Module**: Implemented `POST /api/v1/admin/banners`, `GET /api/v1/admin/banners`, `GET /api/v1/banners/active`.
+- **Showtime Scheduler Module**: Implemented `POST /api/v1/admin/showtimes` with 15-minute inter-session conflict detection and automatic seat matrix initialization.
+- **Dynamic Home Aggregator Module**: Implemented `GET /api/v1/home` dynamically aggregating active banners, now-showing movies, coming-soon movies, cities, and cinemas per selected city.
+- **Global Standards**: Added `AllExceptionsFilter` and `TransformInterceptor` matching `API-CONTRACT.md` JSON output format.
+- **Swagger Documentation**: Configured OpenAPI Swagger UI on `/api/docs`.

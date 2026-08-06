@@ -1,0 +1,282 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  SCANNER
+}
+
+enum MembershipTier {
+  MEMBER
+  U22_FANC
+  VIP
+  VVIP
+}
+
+enum MovieStatus {
+  NOW_SHOWING
+  COMING_SOON
+  SNEAK_SHOW
+}
+
+enum AgeRating {
+  P
+  K
+  T13
+  T16
+  T18
+}
+
+enum ScreenType {
+  STANDARD
+  IMAX
+  FOUR_DX
+  SCREEN_X
+  GOLD_CLASS
+  LAMOUR_BED
+}
+
+enum SeatType {
+  STANDARD
+  VIP
+  COUPLE
+  ACCESSIBLE
+  EMPTY_SPACE
+}
+
+enum SeatStatus {
+  AVAILABLE
+  HOLDING
+  RESERVED
+  SOLD
+  BLOCKED
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  PAID
+  CANCELLED
+  EXPIRED
+}
+
+enum TicketStatus {
+  UNUSED
+  CHECKED_IN
+  CANCELLED
+  EXPIRED
+}
+
+enum BannerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  password        String
+  fullName        String
+  phone           String?
+  role            Role           @default(CUSTOMER)
+  membershipTier  MembershipTier @default(MEMBER)
+  points          Int            @default(0)
+  cgvCardBalance  Int            @default(0)
+  isU22Verified   Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  refreshTokens   RefreshToken[]
+  bookings        Booking[]
+  reviews         MovieReview[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model City {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  displayOrder Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cinemas Cinema[]
+
+  @@map("cities")
+}
+
+model Cinema {
+  id        String   @id @default(uuid())
+  cityId    String
+  name      String
+  address   String
+  phone     String?
+  amenities String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  city      City       @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  halls     Hall[]
+  showtimes Showtime[]
+
+  @@map("cinemas")
+}
+
+model Hall {
+  id         String     @id @default(uuid())
+  cinemaId   String
+  name       String
+  screenType ScreenType @default(STANDARD)
+  roomMatrix Json       // Structured room layout JSON (dimensions, aisles, grid)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  cinema    Cinema     @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  showtimes Showtime[]
+
+  @@map("halls")
+}
+
+model Movie {
+  id              String      @id @default(uuid())
+  title           String
+  titleOriginal   String?
+  director        String?
+  cast            String?
+  genres          String[]    @default([])
+  durationMinutes Int
+  releaseDate     DateTime
+  posterUrl       String
+  trailerUrl      String?
+  ageRating       AgeRating   @default(P)
+  languageType    String      @default("SUB") // SUB, DUB, THUYT_MINH
+  status          MovieStatus @default(NOW_SHOWING)
+  description     String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  showtimes Showtime[]
+  reviews   MovieReview[]
+
+  @@map("movies")
+}
+
+model Showtime {
+  id        String   @id @default(uuid())
+  movieId   String
+  cinemaId  String
+  hallId    String
+  startTime DateTime
+  endTime   DateTime
+  basePrice Int      // In VND Integer
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movie  Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  cinema Cinema @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  hall   Hall   @relation(fields: [hallId], references: [id], onDelete: Cascade)
+
+  seats    ShowtimeSeat[]
+  bookings Booking[]
+
+  @@map("showtimes")
+}
+
+model ShowtimeSeat {
+  id            String     @id @default(uuid())
+  showtimeId    String
+  seatId        String     // e.g. "H12"
+  row           String     // "A" .. "Z"
+  col           Int
+  type          SeatType   @default(STANDARD)
+  status        SeatStatus @default(AVAILABLE)
+  priceModifier Float      @default(1.0)
+  heldByUserId  String?
+  expiresAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  showtime Showtime @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+
+  @@unique([showtimeId, seatId])
+  @@map("showtime_seats")
+}
+
+model Banner {
+  id           String       @id @default(uuid())
+  title        String
+  imageUrl     String
+  linkUrl      String?
+  displayOrder Int          @default(0)
+  status       BannerStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("banners")
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  userId        String
+  showtimeId    String
+  totalAmount   Int           // In VND Integer
+  status        BookingStatus @default(PENDING_PAYMENT)
+  paymentMethod String?       // VNPAY, CGV_CARD
+  paymentUrl    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  showtime Showtime @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+  tickets  Ticket[]
+
+  @@map("bookings")
+}
+
+model Ticket {
+  id        String       @id @default(uuid())
+  bookingId String
+  seatId    String
+  qrToken   String
+  status    TicketStatus @default(UNUSED)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("tickets")
+}
+
+model MovieReview {
+  id        String   @id @default(uuid())
+  movieId   String
+  userId    String
+  rating    Int      // 1 to 5 stars
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("movie_reviews")
+}
