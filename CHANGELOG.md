@@ -16,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2026-08-06
+
+### Added
+- **Phase 5 Implementation: Turnstile QR Scanner, Loyalty & Admin Analytics APIs**:
+  - **Admin Dashboard & Operational Analytics (`src/modules/analytics`)**: Implemented `GET /api/v1/admin/analytics/dashboard` (summary stats), `GET /api/v1/admin/analytics/revenue` (revenue breakdown by cinema, movie, timeline), `GET /api/v1/admin/analytics/occupancy` (occupancy rate % stats), and `GET /api/v1/admin/analytics/members` (membership tier distribution stats).
+  - **Turnstile QR Scanner & Ticket Check-in (`src/modules/ticket`)**: Implemented `POST /api/v1/tickets/verify-qr` (stateless HMAC verification with `X-Scanner-Key` auth header) and `GET /api/v1/tickets/my-tickets` (customer E-Ticket list).
+  - **CGV Cultureplex Loyalty & Member Rewards (`src/modules/membership`)**: Implemented `GET /api/v1/membership/history` (view CGV Rewards points history & tier evaluation) and `POST /api/v1/membership/redeem` (redeem rewards points for tickets/combos).
+  - Updated [API-CONTRACT.md](file:///d:/ClGV-Film-Ticket-Platform/API-CONTRACT.md) and [DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md](file:///d:/ClGV-Film-Ticket-Platform/backend/DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md).
+
+---
+
 ## [0.2.0] - 2026-08-06
 
 ### Added

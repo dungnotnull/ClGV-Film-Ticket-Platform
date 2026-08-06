@@ -8,6 +8,9 @@ import { BannerModule } from './modules/banner/banner.module';
 import { MovieModule } from './modules/movie/movie.module';
 import { ShowtimeModule } from './modules/showtime/showtime.module';
 import { HomeModule } from './modules/home/home.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { TicketModule } from './modules/ticket/ticket.module';
+import { MembershipModule } from './modules/membership/membership.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { HomeModule } from './modules/home/home.module';
     MovieModule,
     ShowtimeModule,
     HomeModule,
+    AnalyticsModule,
+    TicketModule,
+    MembershipModule,
   ],
 })
 export class AppModule {}

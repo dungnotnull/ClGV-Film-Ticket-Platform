@@ -162,25 +162,25 @@
 
 ## Phase 5: QR Check-in Scanner API, Loyalty & Admin Analytics
 
-- [ ] **Turnstile QR Scanner API (`src/modules/ticket`):**
-  - [ ] `POST /api/v1/tickets/verify-qr`: API soát vé cho máy quét cổng rạp CGV.
-    - [ ] Authenticate qua header `X-Scanner-Key`.
-    - [ ] Giải mã & kiểm tra HMAC signature statelessly (<50ms).
-    - [ ] Kiểm tra thời hạn hết hạn suất chiếu `exp`.
-    - [ ] Cập nhật trạng thái vé `UNUSED` -> `CHECKED_IN` atomic.
-    - [ ] Trả về thông tin xác thực (Tên phim, rạp, phòng chiếu, số ghế, thông tin combo bắp nước đính kèm).
+- [x] **Turnstile QR Scanner API (`src/modules/ticket`):**
+  - [x] `POST /api/v1/tickets/verify-qr`: API soát vé cho máy quét cổng rạp CGV.
+    - [x] Authenticate qua header `X-Scanner-Key`.
+    - [x] Giải mã & kiểm tra HMAC signature statelessly (<50ms).
+    - [x] Kiểm tra thời hạn hết hạn suất chiếu `exp`.
+    - [x] Cập nhật trạng thái vé `UNUSED` -> `CHECKED_IN` atomic.
+    - [x] Trả về thông tin xác thực (Tên phim, rạp, phòng chiếu, số ghế, thông tin combo bắp nước đính kèm).
 
-- [ ] **CGV Cultureplex Loyalty & Member Rewards (`src/modules/membership`):**
-  - [ ] Engine tự động xét duyệt nâng hạng hội viên hằng năm (`MEMBER` -> `VIP` -> `VVIP`).
-  - [ ] Engine tự động tặng quà sinh nhật (CGV Birthday Combo + Vé 2D/3D miễn phí) vào tài khoản hội viên có sinh nhật trong tháng.
-  - [ ] `GET /api/v1/membership/history`: API xem lịch sử tích điểm và đổi điểm CGV Rewards.
-  - [ ] `POST /api/v1/membership/redeem`: API đổi điểm CGV Rewards lấy vé xem phim hoặc bắp nước.
+- [x] **CGV Cultureplex Loyalty & Member Rewards (`src/modules/membership`):**
+  - [x] Engine tự động xét duyệt nâng hạng hội viên hằng năm (`MEMBER` -> `VIP` -> `VVIP`).
+  - [x] Engine tự động tặng quà sinh nhật (CGV Birthday Combo + Vé 2D/3D miễn phí) vào tài khoản hội viên có sinh nhật trong tháng.
+  - [x] `GET /api/v1/membership/history`: API xem lịch sử tích điểm và đổi điểm CGV Rewards.
+  - [x] `POST /api/v1/membership/redeem`: API đổi điểm CGV Rewards lấy vé xem phim hoặc bắp nước.
 
-- [ ] **Admin Dashboard & Operational Analytics (`src/modules/analytics`):**
-  - [ ] `GET /api/v1/admin/analytics/dashboard`: View thống kê tổng quan (Doanh thu vé + bắp nước, tỷ lệ lấp đầy rạp, số vé bán trong ngày).
-  - [ ] `GET /api/v1/admin/analytics/revenue`: API thống kê doanh thu theo cụm rạp, theo bộ phim, theo khoảng thời gian.
-  - [ ] `GET /api/v1/admin/analytics/occupancy`: API thống kê tỷ lệ lấp đầy phòng chiếu (Occupancy %).
-  - [ ] `GET /api/v1/admin/analytics/members`: API thống kê số lượng & hành vi tiêu dùng của hội viên theo hạng.
+- [x] **Admin Dashboard & Operational Analytics (`src/modules/analytics`):**
+  - [x] `GET /api/v1/admin/analytics/dashboard`: View thống kê tổng quan (Doanh thu vé + bắp nước, tỷ lệ lấp đầy rạp, số vé bán trong ngày).
+  - [x] `GET /api/v1/admin/analytics/revenue`: API thống kê doanh thu theo cụm rạp, theo bộ phim, theo khoảng thời gian.
+  - [x] `GET /api/v1/admin/analytics/occupancy`: API thống kê tỷ lệ lấp đầy phòng chiếu (Occupancy %).
+  - [x] `GET /api/v1/admin/analytics/members`: API thống kê số lượng & hành vi tiêu dùng của hội viên theo hạng.
 
 ---
 

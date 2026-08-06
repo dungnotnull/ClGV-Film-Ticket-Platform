@@ -401,6 +401,28 @@ Base URL: `http://localhost:4000/api/v1`
 
 ---
 
+### 2.7 Admin Dashboard & Operational Analytics (`/admin/analytics`) *(Admin Only)*
+
+#### `GET /admin/analytics/dashboard`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Response `200 OK`**: Overview metrics including total revenue, tickets sold, active movies, overall occupancy %, top movies, and recent bookings.
+
+#### `GET /admin/analytics/revenue`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Query Parameters**: `startDate`, `endDate`, `cinemaId`, `movieId`
+* **Response `200 OK`**: Detailed revenue metrics breakdown by cinema, movie, and daily timeline.
+
+#### `GET /admin/analytics/occupancy`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Query Parameters**: `cinemaId`, `date` (`YYYY-MM-DD`)
+* **Response `200 OK`**: Hall & showtime occupancy percentage analytics (`soldSeats` / `totalSeats` * 100%).
+
+#### `GET /admin/analytics/members`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Response `200 OK`**: Membership tier distribution (`MEMBER`, `U22_FANC`, `VIP`, `VVIP`), total points issued, and U22 verification stats.
+
+---
+
 ## 3. Real-Time WebSocket Protocol (Socket.io)
 
 Gateway URL: `ws://localhost:4000/socket.io`
