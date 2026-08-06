@@ -8,91 +8,91 @@
 
 ## Phase 1: Database & Core Setup
 
-- [ ] **Project Setup & Infrastructure:**
-  - [ ] Khởi tạo dự án Node.js (NestJS CLI / Express TypeScript strict mode).
-  - [ ] Thiết lập Docker Compose cho PostgreSQL 16 & Redis 7.
-  - [ ] Cấu hình Prisma ORM / TypeORM kết nối PostgreSQL & ioredis client.
-  - [ ] Cấu hình Swagger UI cho API Documentation (`/api/docs`).
-  - [ ] Xây dựng Global Exception Filter và Response Interceptor (theo chuẩn `API-CONTRACT.md`).
+- [x] **Project Setup & Infrastructure:**
+  - [x] Khởi tạo dự án Node.js (NestJS CLI / Express TypeScript strict mode).
+  - [x] Thiết lập Docker Compose cho PostgreSQL 16 & Redis 7.
+  - [x] Cấu hình Prisma ORM / TypeORM kết nối PostgreSQL & ioredis client.
+  - [x] Cấu hình Swagger UI cho API Documentation (`/api/docs`).
+  - [x] Xây dựng Global Exception Filter và Response Interceptor (theo chuẩn `API-CONTRACT.md`).
 
-- [ ] **Auth, User & CGV Membership (`src/modules/auth`, `src/modules/users`, `src/modules/membership`):**
-  - [ ] Định nghĩa entities/schema `User`, `Role` (`CUSTOMER`, `ADMIN`, `SCANNER`), `MembershipTier` (`MEMBER`, `U22_FANC`, `VIP`, `VVIP`), `PointHistory`, `CGVCard` (Ví/Thẻ hội viên CGV).
-  - [ ] Cấu hình chiến lược JWT Authentication (Access Token & Refresh Token) & OAuth 2.0 (Google/Facebook Login).
-  - [ ] Tạo decorator `@Roles()` và `RolesGuard` phân quyền người dùng và quản trị rạp.
-  - [ ] `POST /api/v1/auth/register`: API đăng ký tài khoản (tự động khởi tạo thẻ hội viên CGV Card).
-  - [ ] `POST /api/v1/auth/login`: API đăng nhập (trả về Access Token, Refresh Token và thông tin User).
-  - [ ] `POST /api/v1/auth/refresh`: API cấp lại Access Token mới từ Refresh Token.
-  - [ ] `GET /api/v1/auth/me`: API lấy thông tin cá nhân, hạng hội viên CGV, số điểm CGV Rewards & số dư thẻ CGV Card.
-  - [ ] `PUT /api/v1/auth/profile`: API cập nhật thông tin cá nhân (Họ tên, SĐT, Ngày sinh để nhận quà sinh nhật).
-  - [ ] `POST /api/v1/auth/verify-u22`: API xác minh độ tuổi U22/FanC (12-22 tuổi) để hưởng giá vé ưu đãi HSSV.
+- [x] **Auth, User & CGV Membership (`src/modules/auth`, `src/modules/users`, `src/modules/membership`):**
+  - [x] Định nghĩa entities/schema `User`, `Role` (`CUSTOMER`, `ADMIN`, `SCANNER`), `MembershipTier` (`MEMBER`, `U22_FANC`, `VIP`, `VVIP`), `PointHistory`, `CGVCard` (Ví/Thẻ hội viên CGV).
+  - [x] Cấu hình chiến lược JWT Authentication (Access Token & Refresh Token) & OAuth 2.0 (Google/Facebook Login).
+  - [x] Tạo decorator `@Roles()` và `RolesGuard` phân quyền người dùng và quản trị rạp.
+  - [x] `POST /api/v1/auth/register`: API đăng ký tài khoản (tự động khởi tạo thẻ hội viên CGV Card).
+  - [x] `POST /api/v1/auth/login`: API đăng nhập (trả về Access Token, Refresh Token và thông tin User).
+  - [x] `POST /api/v1/auth/refresh`: API cấp lại Access Token mới từ Refresh Token.
+  - [x] `GET /api/v1/auth/me`: API lấy thông tin cá nhân, hạng hội viên CGV, số điểm CGV Rewards & số dư thẻ CGV Card.
+  - [x] `PUT /api/v1/auth/profile`: API cập nhật thông tin cá nhân (Họ tên, SĐT, Ngày sinh để nhận quà sinh nhật).
+  - [x] `POST /api/v1/auth/verify-u22`: API xác minh độ tuổi U22/FanC (12-22 tuổi) để hưởng giá vé ưu đãi HSSV.
 
 ---
 
 ## Phase 2: Core Cinema, Showtime & Catalog API (CGV Standards)
 
-- [ ] **Cities & Location Management (`src/modules/city`):**
-  - [ ] Định nghĩa schema `City` (tên thành phố/khu vực: TP.HCM, Hà Nội, Đà Nẵng, Cần Thơ..., mã code, thứ tự hiển thị).
-  - [ ] `POST /api/v1/admin/cities`: API Admin tạo thành phố/khu vực mới.
-  - [ ] `GET /api/v1/cities`: API lấy danh sách toàn bộ thành phố/khu vực kèm số lượng rạp.
-  - [ ] `PUT /api/v1/admin/cities/:id`: API Admin cập nhật thông tin thành phố.
-  - [ ] `DELETE /api/v1/admin/cities/:id`: API Admin xóa thành phố.
+- [x] **Cities & Location Management (`src/modules/city`):**
+  - [x] Định nghĩa schema `City` (tên thành phố/khu vực: TP.HCM, Hà Nội, Đà Nẵng, Cần Thơ..., mã code, thứ tự hiển thị).
+  - [x] `POST /api/v1/admin/cities`: API Admin tạo thành phố/khu vực mới.
+  - [x] `GET /api/v1/cities`: API lấy danh sách toàn bộ thành phố/khu vực kèm số lượng rạp.
+  - [x] `PUT /api/v1/admin/cities/:id`: API Admin cập nhật thông tin thành phố.
+  - [x] `DELETE /api/v1/admin/cities/:id`: API Admin xóa thành phố.
 
-- [ ] **Cinema Clusters & Special Experience Rooms (`src/modules/cinema`):**
-  - [ ] Định nghĩa schema `Cinema`, `Hall`, `FormatType` (`2D`, `3D`, `IMAX`, `4DX`, `SCREENX`, `GOLD_CLASS`, `LAMOUR_BED`).
-  - [ ] `POST /api/v1/cinemas`: API tạo mới cụm rạp CGV (gắn với `cityId`, tên cụm rạp, địa chỉ, GPS location, hotline, tiện ích rạp như Parking, Popcorn Bar, L'Amour).
-  - [ ] `GET /api/v1/cinemas`: API lấy danh sách cụm rạp (hỗ trợ filter động theo `cityId`, `format`, `amenities`, pagination).
-  - [ ] `GET /api/v1/cinemas/:id`: API lấy chi tiết cụm rạp và các tiện ích.
-  - [ ] `PUT /api/v1/cinemas/:id`: API cập nhật thông tin cụm rạp.
-  - [ ] `DELETE /api/v1/cinemas/:id`: API xóa cụm rạp.
+- [x] **Cinema Clusters & Special Experience Rooms (`src/modules/cinema`):**
+  - [x] Định nghĩa schema `Cinema`, `Hall`, `FormatType` (`2D`, `3D`, `IMAX`, `4DX`, `SCREENX`, `GOLD_CLASS`, `LAMOUR_BED`).
+  - [x] `POST /api/v1/cinemas`: API tạo mới cụm rạp CGV (gắn với `cityId`, tên cụm rạp, địa chỉ, GPS location, hotline, tiện ích rạp như Parking, Popcorn Bar, L'Amour).
+  - [x] `GET /api/v1/cinemas`: API lấy danh sách cụm rạp (hỗ trợ filter động theo `cityId`, `format`, `amenities`, pagination).
+  - [x] `GET /api/v1/cinemas/:id`: API lấy chi tiết cụm rạp và các tiện ích.
+  - [x] `PUT /api/v1/cinemas/:id`: API cập nhật thông tin cụm rạp.
+  - [x] `DELETE /api/v1/cinemas/:id`: API xóa cụm rạp.
 
-- [ ] **Halls & Dynamic CGV Room Matrix Builder (`src/modules/cinema`):**
-  - [ ] Xây dựng data structure ma trận ghế JSON (`SeatNode`, `RoomMatrix`: dimensions, aisles, grid của các loại ghế: Standard, VIP, Sweetbox/Couple, GoldClass/L'Amour Bed).
-  - [ ] `POST /api/v1/halls`: API tạo phòng chiếu mới cho cụm rạp.
-  - [ ] `GET /api/v1/halls`: API lấy danh sách phòng chiếu theo cinema ID.
-  - [ ] `GET /api/v1/halls/:id`: API chi tiết phòng chiếu.
-  - [ ] `PUT /api/v1/halls/:id/matrix`: API cấu hình ma trận sơ đồ ghế (Hàng A-Z, Cột 1-N, Aisle gaps, loại ghế, priceModifier, isBlocked).
-  - [ ] `GET /api/v1/halls/:id/matrix`: API lấy sơ đồ ma trận ghế phòng chiếu.
-  - [ ] `DELETE /api/v1/halls/:id`: API xóa phòng chiếu.
+- [x] **Halls & Dynamic CGV Room Matrix Builder (`src/modules/cinema`):**
+  - [x] Xây dựng data structure ma trận ghế JSON (`SeatNode`, `RoomMatrix`: dimensions, aisles, grid của các loại ghế: Standard, VIP, Sweetbox/Couple, GoldClass/L'Amour Bed).
+  - [x] `POST /api/v1/halls`: API tạo phòng chiếu mới cho cụm rạp.
+  - [x] `GET /api/v1/halls`: API lấy danh sách phòng chiếu theo cinema ID.
+  - [x] `GET /api/v1/halls/:id`: API chi tiết phòng chiếu.
+  - [x] `PUT /api/v1/halls/:id/matrix`: API cấu hình ma trận sơ đồ ghế (Hàng A-Z, Cột 1-N, Aisle gaps, loại ghế, priceModifier, isBlocked).
+  - [x] `GET /api/v1/halls/:id/matrix`: API lấy sơ đồ ma trận ghế phòng chiếu.
+  - [x] `DELETE /api/v1/halls/:id`: API xóa phòng chiếu.
 
-- [ ] **Admin Promotional Banners & CMS (`src/modules/banner`):**
-  - [ ] Định nghĩa schema `Banner` (tiêu đề, hình ảnh, link liên kết, thứ tự hiển thị, status `ACTIVE`/`INACTIVE`).
-  - [ ] `POST /api/v1/admin/banners`: API Admin tạo banner/slider mới.
-  - [ ] `GET /api/v1/admin/banners`: API Admin quản lý danh sách banner.
-  - [ ] `PUT /api/v1/admin/banners/:id`: API Admin sửa thông tin banner.
-  - [ ] `DELETE /api/v1/admin/banners/:id`: API Admin xóa banner.
+- [x] **Admin Promotional Banners & CMS (`src/modules/banner`):**
+  - [x] Định nghĩa schema `Banner` (tiêu đề, hình ảnh, link liên kết, thứ tự hiển thị, status `ACTIVE`/`INACTIVE`).
+  - [x] `POST /api/v1/admin/banners`: API Admin tạo banner/slider mới.
+  - [x] `GET /api/v1/admin/banners`: API Admin quản lý danh sách banner.
+  - [x] `PUT /api/v1/admin/banners/:id`: API Admin sửa thông tin banner.
+  - [x] `DELETE /api/v1/admin/banners/:id`: API Admin xóa banner.
 
-- [ ] **Movie Catalog & Special Formats (`src/modules/movie`):**
-  - [ ] Định nghĩa schema `Movie` (Tiêu đề tiếng Việt/Anh, đạo diễn, diễn viên, thể loại, thời lượng, ngày khởi chiếu, posterUrl, trailerUrl, ageRating `P`/`K`/`T13`/`T16`/`T18`, language `SUB`/`DUB`/`THUYT_MINH`, status `NOW_SHOWING`/`COMING_SOON`/`SNEAK_SHOW`).
-  - [ ] `POST /api/v1/admin/movies`: API Admin tạo phim mới (hiển thị ngay lên trang chủ).
-  - [ ] `PUT /api/v1/admin/movies/:id`: API Admin sửa thông tin phim.
-  - [ ] `DELETE /api/v1/admin/movies/:id`: API Admin xóa/ngừng chiếu phim.
+- [x] **Movie Catalog & Special Formats (`src/modules/movie`):**
+  - [x] Định nghĩa schema `Movie` (Tiêu đề tiếng Việt/Anh, đạo diễn, diễn viên, thể loại, thời lượng, ngày khởi chiếu, posterUrl, trailerUrl, ageRating `P`/`K`/`T13`/`T16`/`T18`, language `SUB`/`DUB`/`THUYT_MINH`, status `NOW_SHOWING`/`COMING_SOON`/`SNEAK_SHOW`).
+  - [x] `POST /api/v1/admin/movies`: API Admin tạo phim mới (hiển thị ngay lên trang chủ).
+  - [x] `PUT /api/v1/admin/movies/:id`: API Admin sửa thông tin phim.
+  - [x] `DELETE /api/v1/admin/movies/:id`: API Admin xóa/ngừng chiếu phim.
 
-- [ ] **Showtime Scheduler Matrix & Conflict Detection (`src/modules/showtime`):**
-  - [ ] Định nghĩa schema `Showtime`, `ShowtimeSeat` (`AVAILABLE`, `HOLDING`, `RESERVED`, `SOLD`, `BLOCKED`), `PricingPolicy` (Quy tắc tính giá theo khung giờ sáng/tối, ngày thường/cuối tuần/ngày lễ, định dạng 2D/3D/IMAX/4DX).
-  - [ ] Xây dựng **Automated Conflict Detection Engine** (kiểm tra trùng lịch chiếu phòng + 15 phút dọn dẹp vệ sinh).
-  - [ ] `POST /api/v1/admin/showtimes`: API Admin tạo suất chiếu mới (tự động validate conflict & áp dụng giá).
-  - [ ] `GET /api/v1/admin/showtimes`: API Admin xem lịch chiếu toàn bộ hệ thống rạp.
-  - [ ] `PUT /api/v1/admin/showtimes/:id`: API Admin điều chỉnh suất chiếu.
-  - [ ] `DELETE /api/v1/admin/showtimes/:id`: API Admin hủy suất chiếu.
+- [x] **Showtime Scheduler Matrix & Conflict Detection (`src/modules/showtime`):**
+  - [x] Định nghĩa schema `Showtime`, `ShowtimeSeat` (`AVAILABLE`, `HOLDING`, `RESERVED`, `SOLD`, `BLOCKED`), `PricingPolicy` (Quy tắc tính giá theo khung giờ sáng/tối, ngày thường/cuối tuần/ngày lễ, định dạng 2D/3D/IMAX/4DX).
+  - [x] Xây dựng **Automated Conflict Detection Engine** (kiểm tra trùng lịch chiếu phòng + 15 phút dọn dẹp vệ sinh).
+  - [x] `POST /api/v1/admin/showtimes`: API Admin tạo suất chiếu mới (tự động validate conflict & áp dụng giá).
+  - [x] `GET /api/v1/admin/showtimes`: API Admin xem lịch chiếu toàn bộ hệ thống rạp.
+  - [x] `PUT /api/v1/admin/showtimes/:id`: API Admin điều chỉnh suất chiếu.
+  - [x] `DELETE /api/v1/admin/showtimes/:id`: API Admin hủy suất chiếu.
 
 ### 2.2. Discovery & Shopping (Role Customer)
 
-- [ ] **Dynamic Home Page & Promotional Sliders (`src/modules/home`):**
-  - [ ] `GET /api/v1/home`: API tổng hợp dữ liệu trang chủ động (tự động lấy danh sách Banner active, Phim đang chiếu, Phim sắp chiếu, Cụm rạp nổi bật theo `cityId`, và các chương trình khuyến mãi do Admin đăng).
-  - [ ] `GET /api/v1/home/banners`: API lấy danh sách banner khuyến mãi / phim hot slider trang chủ.
-  - [ ] `GET /api/v1/home/now-showing`: API lấy danh sách phim đang chiếu nổi bật.
-  - [ ] `GET /api/v1/home/coming-soon`: API lấy danh sách phim sắp chiếu.
-  - [ ] `GET /api/v1/home/promotions`: API lấy danh sách ưu đãi CGV (Happy Wednesday, Culture Day, U22, Sinh nhật).
+- [x] **Dynamic Home Page & Promotional Sliders (`src/modules/home`):**
+  - [x] `GET /api/v1/home`: API tổng hợp dữ liệu trang chủ động (tự động lấy danh sách Banner active, Phim đang chiếu, Phim sắp chiếu, Cụm rạp nổi bật theo `cityId`, và các chương trình khuyến mãi do Admin đăng).
+  - [x] `GET /api/v1/home/banners`: API lấy danh sách banner khuyến mãi / phim hot slider trang chủ.
+  - [x] `GET /api/v1/home/now-showing`: API lấy danh sách phim đang chiếu nổi bật.
+  - [x] `GET /api/v1/home/coming-soon`: API lấy danh sách phim sắp chiếu.
+  - [x] `GET /api/v1/home/promotions`: API lấy danh sách ưu đãi CGV (Happy Wednesday, Culture Day, U22, Sinh nhật).
 
-- [ ] **Movie Catalog & Reviews (`src/modules/movie`):**
-  - [ ] `GET /api/v1/movies`: API lấy danh sách phim (lọc theo `status`, `genre`, `format`, `rating`, `search`).
-  - [ ] `GET /api/v1/movies/:id`: API chi tiết phim, trailer video, đánh giá sao & suất chiếu khả dụng.
-  - [ ] `GET /api/v1/movies/:id/reviews`: API xem danh sách nhận xét & đánh giá từ khán giả.
-  - [ ] `POST /api/v1/movies/:id/reviews`: API gửi đánh giá & nhận xét phim (chỉ áp dụng cho user đã mua vé và xem phim này).
+- [x] **Movie Catalog & Reviews (`src/modules/movie`):**
+  - [x] `GET /api/v1/movies`: API lấy danh sách phim (lọc theo `status`, `genre`, `format`, `rating`, `search`).
+  - [x] `GET /api/v1/movies/:id`: API chi tiết phim, trailer video, đánh giá sao & suất chiếu khả dụng.
+  - [x] `GET /api/v1/movies/:id/reviews`: API xem danh sách nhận xét & đánh giá từ khán giả.
+  - [x] `POST /api/v1/movies/:id/reviews`: API gửi đánh giá & nhận xét phim (chỉ áp dụng cho user đã mua vé và xem phim này).
 
-- [ ] **Showtime & Dynamic Seat Picker (`src/modules/showtime`):**
-  - [ ] `GET /api/v1/showtimes`: API lấy suất chiếu theo `movieId`, `cinemaId`, `date`, `format`.
-  - [ ] `GET /api/v1/showtimes/:id/seats`: API lấy sơ đồ ma trận ghế và trạng thái thời gian thực (`AVAILABLE`, `HOLDING`, `SOLD`).
+- [x] **Showtime & Dynamic Seat Picker (`src/modules/showtime`):**
+  - [x] `GET /api/v1/showtimes`: API lấy suất chiếu theo `movieId`, `cinemaId`, `date`, `format`.
+  - [x] `GET /api/v1/showtimes/:id/seats`: API lấy sơ đồ ma trận ghế và trạng thái thời gian thực (`AVAILABLE`, `HOLDING`, `SOLD`).
 
 ---
 
