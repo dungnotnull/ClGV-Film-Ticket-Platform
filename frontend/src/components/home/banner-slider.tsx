@@ -43,7 +43,7 @@ export function BannerSlider({ banners }: { banners: any[] }) {
             <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none z-10" />
             
             <div className="absolute bottom-16 left-12 text-white z-20 flex flex-col gap-4 max-w-2xl">
-              <h2 className="text-5xl font-black uppercase tracking-widest drop-shadow-2xl text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70">
+              <h2 className="text-5xl font-black uppercase tracking-widest drop-shadow-2xl text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 py-2 leading-relaxed">
                 {banner.title}
               </h2>
               <p className="text-lg text-white/80 line-clamp-2 drop-shadow-md">

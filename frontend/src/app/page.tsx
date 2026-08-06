@@ -45,7 +45,7 @@ export default async function Home() {
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-4">
             <div className="w-1.5 h-8 bg-primary rounded-full shadow-[0_0_10px_rgba(225,29,72,0.8)]" />
-            <h2 className="text-4xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">Phim Đang Chiếu</h2>
+            <h2 className="text-4xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60 py-2 leading-relaxed">Phim Đang Chiếu</h2>
           </div>
           <Link href="/movies?status=NOW_SHOWING" className="text-sm font-bold uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-2 group">
             Xem tất cả
@@ -99,7 +99,7 @@ export default async function Home() {
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-4">
             <div className="w-1.5 h-8 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
-            <h2 className="text-4xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">Phim Sắp Chiếu</h2>
+            <h2 className="text-4xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60 py-2 leading-relaxed">Phim Sắp Chiếu</h2>
           </div>
           <Link href="/movies?status=COMING_SOON" className="text-sm font-bold uppercase tracking-widest text-blue-500 hover:text-white transition-colors flex items-center gap-2 group">
             Xem tất cả
@@ -145,7 +145,7 @@ export default async function Home() {
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-4">
               <div className="w-1.5 h-8 bg-amber-500 rounded-full shadow-[0_0_10px_rgba(245,158,11,0.8)]" />
-              <h2 className="text-4xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600">Rạp Nổi Bật</h2>
+              <h2 className="text-4xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600 py-2 leading-relaxed">Rạp Nổi Bật</h2>
             </div>
             <Link href="/cinemas" className="text-sm font-bold uppercase tracking-widest text-amber-500 hover:text-white transition-colors flex items-center gap-2 group">
               Hệ Thống Rạp

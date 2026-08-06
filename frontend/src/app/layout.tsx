@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Outfit } from 'next/font/google';
+import { Geist, Geist_Mono, Oswald } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/sonner';
 
-const outfit = Outfit({
-  variable: '--font-outfit',
-  subsets: ['latin'],
+const oswald = Oswald({
+  variable: '--font-oswald',
+  subsets: ['latin', 'vietnamese'],
 });
 
 const geistSans = Geist({
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${outfit.className} h-full antialiased dark`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable} ${oswald.className} h-full antialiased dark`}>
       <body className="min-h-full flex flex-col relative bg-black text-foreground">
         {/* Global Ambient Lights */}
         <div className="fixed top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[150px] pointer-events-none z-0" />

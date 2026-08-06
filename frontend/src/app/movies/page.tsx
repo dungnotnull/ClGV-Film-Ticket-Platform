@@ -26,7 +26,7 @@ export default async function MoviesPage() {
       <div className="flex items-center justify-center mb-10">
         <div className="flex items-center gap-4">
           <div className="w-1.5 h-8 bg-primary rounded-full shadow-[0_0_10px_rgba(225,29,72,0.8)]" />
-          <h1 className="text-4xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">Phim Tại ClGV</h1>
+          <h1 className="text-4xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60 py-2 leading-relaxed">Phim Tại ClGV</h1>
           <div className="w-1.5 h-8 bg-primary rounded-full shadow-[0_0_10px_rgba(225,29,72,0.8)]" />
         </div>
       </div>

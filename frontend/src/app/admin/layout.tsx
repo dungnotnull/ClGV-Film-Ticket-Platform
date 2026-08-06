@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LayoutDashboard, Film, MapPin, Users, Settings, LogOut, CalendarRange, Image as ImageIcon } from 'lucide-react';
-import { Outfit } from 'next/font/google';
+import { Oswald } from 'next/font/google';
 
-const outfit = Outfit({ subsets: ['latin'] });
+const oswald = Oswald({ subsets: ['latin', 'vietnamese'] });
 
 export default function AdminLayout({
   children,
@@ -30,7 +30,7 @@ export default function AdminLayout({
   if (!mounted || !user || user.role !== 'ADMIN') return null;
 
   return (
-    <div className={`flex h-[calc(100vh-4rem)] relative overflow-hidden bg-black ${outfit.className}`}>
+    <div className={`flex h-[calc(100vh-4rem)] relative overflow-hidden bg-black ${oswald.className}`}>
       {/* Cinematic Background Image */}
       <div 
         className="absolute inset-0 z-0 opacity-20 pointer-events-none mix-blend-luminosity"
