@@ -176,7 +176,7 @@ Base URL: `http://localhost:4000/api/v1`
   ```json
   {
     "reservationId": "res_99812",
-    "paymentMethod": "MOMO",
+    "paymentMethod": "VNPAY",
     "comboIds": [
       { "comboId": "cmb_01", "quantity": 1 }
     ]
@@ -189,7 +189,9 @@ Base URL: `http://localhost:4000/api/v1`
     "data": {
       "bookingId": "bkg_77123",
       "totalAmount": 280000,
-      "status": "PAID",
+      "status": "PENDING_PAYMENT",
+      "paymentUrl": "http://localhost:4000/api/v1/payments/vnpay/mock-gateway?orderId=bkg_77123&amount=280000",
+      "paymentQrPayload": "00020101021238540010A000000727012400069704230110bkg_77123530370454062800005802VN5904CLGV6007HA NOI62190815bkg_7712363041D9C",
       "tickets": [
         {
           "ticketId": "tkt_89f3a12b",
@@ -200,6 +202,27 @@ Base URL: `http://localhost:4000/api/v1`
     }
   }
   ```
+
+---
+
+### 2.5 Mock VNPAY Payment Module (`/payments/vnpay`)
+
+#### `POST /payments/vnpay/create-url`
+* **Request Payload**: `{ "bookingId": "bkg_77123", "amount": 280000, "orderInfo": "Thanh toan ve xem phim ClGV" }`
+* **Response `200 OK`**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "paymentUrl": "http://localhost:4000/api/v1/payments/vnpay/mock-gateway?orderId=bkg_77123",
+      "qrPayload": "00020101021238540010A000000727012400069704230110bkg_77123530370454062800005802VN..."
+    }
+  }
+  ```
+
+#### `GET /payments/vnpay/callback`
+* **Query Parameters**: `vnp_ResponseCode`, `vnp_TxnRef`, `vnp_Amount`, `vnp_SecureHash`
+* **Response `200 OK`**: Updates booking status to `PAID`, triggers seat status `SOLD` broadcast, and returns booking receipt.
 
 ---
 

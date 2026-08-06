@@ -12,6 +12,8 @@ This document provides isolated context, development conventions, directory layo
 | **Database** | PostgreSQL 16 |
 | **ORM** | Prisma ORM / TypeORM |
 | **Distributed Caching & Locks** | Redis 7 (`ioredis`, Redlock algorithm) |
+| **Payment Gateway** | Mock VNPAY Payment Gateway (Sandbox simulation flow) |
+| **QR Code Library** | `qrcode` (Mock QR Payload & Image Generation) |
 | **Real-time Gateway** | WebSockets via Socket.io Server |
 | **Testing** | Vitest (Unit/Integration), Supertest (HTTP), K6 (Concurrency Load Testing) |
 | **Security & Crypto** | JWT (Access + Refresh tokens), Passport.js, `crypto` (HMAC-SHA256) |

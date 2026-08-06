@@ -123,24 +123,26 @@
   - [ ] `POST /api/v1/cgv-card/topup`: API nạp tiền vào thẻ thành viên CGV Card (qua ATM/Visa/Momo).
   - [ ] `GET /api/v1/cgv-card/balance`: API xem số dư và lịch sử giao dịch thẻ CGV Card.
 
-- [ ] **Checkout & Transaction Engine (`src/modules/booking`):**
+- [ ] **Mock VNPAY Payment & Checkout Engine (`src/modules/payment`, `src/modules/booking`):**
   - [ ] Định nghĩa schema `Booking`, `BookingDetail`, `Payment`, `Invoice`.
-  - [ ] `POST /api/v1/bookings/checkout`: API đặt vé & thanh toán trực tuyến.
+  - [ ] `POST /api/v1/bookings/checkout`: API tạo đơn đặt vé & khởi tạo giao dịch thanh toán.
+  - [ ] `POST /api/v1/payments/vnpay/create-url`: API tạo Mock VNPAY Sandbox URL & chuỗi payload mã QR thanh toán (sử dụng thư viện `qrcode`).
+  - [ ] `GET /api/v1/payments/vnpay/callback`: API xử lý IPN callback từ Mock VNPAY và hoàn tất vé.
   - [ ] **Pessimistic Lock & SQL Transaction (`BookingProcessor`):**
     - [ ] Mở PostgreSQL SQL Transaction (`prisma.$transaction`).
     - [ ] Thực thi `SELECT ... FOR UPDATE` lock hàng ghế trong `ShowtimeSeat`.
     - [ ] Validate trạng thái ghế chưa bị `SOLD`.
     - [ ] Tính toán giảm giá: Áp dụng Voucher, Điểm thưởng CGV Rewards, Ưu đãi HSSV/U22.
-    - [ ] Xử lý cổng thanh toán: MoMo, ZaloPay, VNPAY, Thẻ Visa/ATM, Ví CGV Card.
+    - [ ] Xử lý cổng thanh toán **Mock VNPAY** & Ví CGV Card.
     - [ ] Chuyển trạng thái ghế sang `SOLD`.
     - [ ] Cộng điểm thưởng CGV Rewards (1 điểm = 1.000 VNĐ) dựa vào hạng hội viên.
     - [ ] Xóa Redis Redlock key và broadcast Socket `seat:state_changed` (`SOLD`).
     - [ ] Commit Transaction.
 
-- [ ] **HMAC-SHA256 Ticket Cryptography (`src/modules/ticket`):**
+- [ ] **HMAC-SHA256 Ticket Cryptography & Mock QR (`src/modules/ticket`):**
   - [ ] Định nghĩa schema `Ticket` (`ticketId`, `showtimeId`, `seatId`, `qrToken`, `status`).
-  - [ ] Mã hóa & ký số HMAC-SHA256 QR Token (`Base64URL(HMAC-SHA256(Payload, TICKET_HMAC_SECRET))`).
-  - [ ] `GET /api/v1/tickets/my-tickets`: API xem danh sách vé điện tử đã mua (kèm token QR để FE render).
+  - [ ] Mã hóa & ký số HMAC-SHA256 QR Token (`Base64URL(HMAC-SHA256(Payload, TICKET_HMAC_SECRET))`) và tạo QR image/payload bằng thư viện `qrcode`.
+  - [ ] `GET /api/v1/tickets/my-tickets`: API xem danh sách vé điện tử đã mua (kèm token QR để FE render bằng `qrcode.react`).
   - [ ] `GET /api/v1/tickets/:id`: API xem chi tiết vé điện tử & hóa đơn thanh toán.
 
 ---

@@ -4,13 +4,15 @@ Welcome to **ClGV - Film Ticket Platform**. This document serves as the global s
 
 ---
 
-## 1. Project Overview
+## 1. Project Overview & Core Requirements
 
 **ClGV** is a high-concurrency, multi-role film ticket booking platform inspired by CGV. The system addresses critical distributed systems challenges:
-* Real-time seat matrix state synchronization using WebSockets & Redis Pub/Sub.
-* High-concurrency seat locking and double-booking prevention using a two-tier locking model (**Redlock** + **PostgreSQL pessimistic locking** `SELECT ... FOR UPDATE`).
-* Dynamic theater seat layout rendering (flexible JSON seat matrix).
-* Secure, tamper-proof check-in verification via **HMAC-SHA256 encrypted QR codes**.
+* **Frontend Architecture**: Built on **Next.js 15 (App Router)**, React 19, Tailwind CSS, and Shadcn UI. Features a highly polished, premium CGV-inspired UI/UX design system with dark mode aesthetics, interactive seat picker grid, micro-animations, and responsive layouts.
+* **Backend Architecture**: Built on **Node.js** (NestJS / Express TypeScript), PostgreSQL 16, Prisma/TypeORM, and Redis 7.
+* **Payment Integration**: Uses **Mock VNPAY Payment Gateway** (Sandbox flow) and a **Mock QR Code Generation Library** (`qrcode` / `qrcode.react`) for payment QR codes and ticket verification.
+* **Real-time Synchronization**: Live seat matrix status updates via WebSockets (Socket.io) & Redis Pub/Sub.
+* **Double-Booking Prevention**: Two-tier concurrency locking model (**Redlock** + **PostgreSQL pessimistic locking** `SELECT ... FOR UPDATE`).
+* **Stateless Turnstile Check-in**: Secure, tamper-proof check-in verification via **HMAC-SHA256 encrypted QR code tokens**.
 
 ---
 
@@ -24,32 +26,33 @@ clgv-platform/
 ├── API-CONTRACT.md                                             # Source of truth API contract (FE & BE contract)
 ├── docs/
 │   └── ROADMAP.md                                              # Multi-phase product roadmap
-├── frontend/                                                   # Next.js 15 (App Router), React 19, Tailwind CSS, Shadcn UI
-└── backend/                                                    # Node.js (NestJS / Express), TypeScript, Prisma/TypeORM, PostgreSQL 16, Redis 7
+├── frontend/                                                   # Next.js 15 (App Router), React 19, Tailwind CSS, Shadcn UI, qrcode.react
+└── backend/                                                    # Node.js (NestJS / Express), TypeScript, Prisma/TypeORM, PostgreSQL 16, Redis 7, qrcode
     ├── CLAUDE.md                                               # Isolated Backend-agent context & conventions
+    ├── RULE.md                                                 # Strict backend rules & system directives
     ├── DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md            # Backend-only phase tracking log
     └── ISSUES-LIST-TRACKING.md                                 # Backend issues & bug fix tracking
 ```
 
 ### Agent Responsibilities & Rules
 1. **Root Context**: Reads `CLAUDE.md`, `PROJECT-DETAIL.md`, `API-CONTRACT.md`, and `docs/ROADMAP.md`.
-2. **Frontend Agent**: Works in `/frontend`. Must adhere strictly to `API-CONTRACT.md`.
-3. **Backend Agent**: Works in `/backend`. Automatically reads `backend/CLAUDE.md` and updates `DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md` and `ISSUES-LIST-TRACKING.md`.
+2. **Frontend Agent**: Works in `/frontend`. Must build a highly polished, CGV-inspired UI in **Next.js 15** and adhere strictly to `API-CONTRACT.md`.
+3. **Backend Agent**: Works in `/backend`. Built on **Node.js**, reads `backend/CLAUDE.md` and `backend/RULE.md`, and maintains `DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md` and `ISSUES-LIST-TRACKING.md`.
 4. **API-CONTRACT Rules**: **CRITICAL**. Before modifying any endpoint, payload schema, error code, or WebSocket event, you MUST update [API-CONTRACT.md](file:///d:/ClGV-Film-Ticket-Platform/API-CONTRACT.md) first.
 
 ---
 
 ## 3. High-Level System Workflows & Concurrency Control
 
-### Double-Booking Prevention Algorithm
+### 1. Double-Booking Prevention Algorithm
 To handle sudden booking traffic spikes:
 1. **Tier 1 (Transient Lock)**: Distributed Redis Lock (**Redlock**) with key pattern `lock:seat:{showtime_id}:{seat_id}` and a 10-minute TTL. Returns HTTP 409 `SEAT_ALREADY_HELD` immediately on failure.
 2. **Tier 2 (Postgres Transaction)**: Database pessimistic lock via `SELECT ... FOR UPDATE` within an isolated SQL transaction during payment processing.
 3. **Real-time Synchronization**: Socket.io broadcasts seat status transitions (`AVAILABLE` -> `HOLDING` -> `RESERVED` -> `SOLD`) across all connected clients via Redis Pub/Sub.
 
-### HMAC QR Code Generation & Turnstile Check-in
-* QR Payload: Encrypted token signed with `HMAC-SHA256(ticket_id + user_id + showtime_id + timestamp, SECRET_KEY)`.
-* Validation: Scanner turnstile calls `/api/v1/tickets/verify-qr` for stateless, fast signature verification without unnecessary database joins.
+### 2. Mock VNPAY Payment & QR Code Generation
+* **Payment Flow**: User selects seats -> System locks seats (10-min TTL) -> System invokes `/api/v1/payments/vnpay/create-url` -> Returns Mock VNPAY payment URL & QR code payload generated via mock QR library (`qrcode`) -> User completes mock payment -> Callback `/api/v1/payments/vnpay/callback` triggers ticket issuance.
+* **HMAC QR Ticket Validation**: Signed with `HMAC-SHA256(ticket_id + user_id + showtime_id + timestamp, SECRET_KEY)` and rendered via mock QR library (`qrcode.react` / `qrcode`) for fast turnstile check-in validation.
 
 ---
 
@@ -58,16 +61,12 @@ To handle sudden booking traffic spikes:
 | Domain | Stack |
 | --- | --- |
 | **Language** | TypeScript (Strict mode enabled across FE & BE) |
-| **Frontend** | Next.js 15 (App Router), React 19, Tailwind CSS, Shadcn UI, Socket.io-client |
-| **Backend** | Node.js (NestJS / Express), TypeScript, Prisma ORM / TypeORM |
+| **Frontend** | Next.js 15 (App Router), React 19, Tailwind CSS, Shadcn UI, Socket.io-client, qrcode.react (CGV-inspired polished UI) |
+| **Backend** | Node.js (NestJS / Express), TypeScript, Prisma ORM / TypeORM, qrcode |
 | **Database** | PostgreSQL 16 |
 | **Caching/Locking** | Redis 7 (ioredis, Redlock, Pub/Sub) |
+| **Payment & QR** | Mock VNPAY Payment Gateway + Mock QR Code Library |
 | **Testing** | Vitest, Supertest, K6 (Concurrency Load Scripts) |
-
-### Universal Guidelines
-* **Type Safety**: No `any` types. Shared DTOs and types must align 1:1 with [API-CONTRACT.md](file:///d:/ClGV-Film-Ticket-Platform/API-CONTRACT.md).
-* **Git & Versioning**: Log all major changes in [CHANGELOG.md](file:///d:/ClGV-Film-Ticket-Platform/CHANGELOG.md).
-* **Error Handling**: Use standard JSON error wrappers (`{ success: false, error: { code, message, details } }`).
 
 ---
 
@@ -79,7 +78,7 @@ docker-compose up -d           # Start PostgreSQL 16 & Redis 7
 docker-compose down            # Stop infrastructure containers
 ```
 
-### Backend
+### Backend (Node.js)
 ```bash
 cd backend
 npm install                    # Install dependencies
@@ -89,7 +88,7 @@ npm run start:dev              # Start dev server (http://localhost:4000)
 npm run test                   # Run backend tests
 ```
 
-### Frontend
+### Frontend (Next.js)
 ```bash
 cd frontend
 npm install                    # Install dependencies

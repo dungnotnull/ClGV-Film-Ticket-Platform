@@ -8,18 +8,19 @@
 1. **High-concurrency flash-sales**: Handling thousands of simultaneous seat selections when popular blockbuster tickets drop.
 2. **Double-booking prevention**: Guaranteeing atomic seat locks across micro-seconds without database deadlocks.
 3. **Dynamic hall matrix configuration**: Supporting irregular seating layouts (varying rows, columns, aisles, VIP/Couple seating tiers, accessible seats).
-4. **Offline-first & stateless check-in**: Cryptographically secure QR code tickets that turnstiles can validate instantly via HMAC-SHA256 signatures.
+4. **Mock VNPAY & QR Generation**: Streamlined checkout using a **Mock VNPAY Payment Gateway** sandbox flow and a **Mock QR Code generation library** (`qrcode` / `qrcode.react`) for payment QR codes and stateless HMAC ticket validation.
+5. **Polished CGV-Inspired UI**: Built with **Next.js 15 (App Router)**, featuring a premium dark-themed interface, interactive seat matrix, micro-animations, and responsive design.
 
 ---
 
 ## 2. Functional Requirements Matrix
 
-### 2.1 Customer Facing Experience
-* **Movie Discovery & Catalog**: Filter movies by status (`NOW_SHOWING`, `COMING_SOON`), genres, age rating (P, C13, C16, C18), format (2D, 3D, IMAX, 4DX), and language sub/dub.
+### 2.1 Customer Facing Experience (Next.js 15 Polished UI)
+* **Movie Discovery & Catalog**: Filter movies by status (`NOW_SHOWING`, `COMING_SOON`), genres, age rating (`P`, `K`, `T13`, `T16`, `T18`), format (`2D`, `3D`, `IMAX`, `4DX`), and language (`SUB`, `DUB`).
 * **Interactive Dynamic Seat Picker**:
   * Real-time canvas/SVG rendering of hall layouts (Rows A–Z, Columns 1–N).
   * Color-coded status markers: `AVAILABLE` (selectable), `HOLDING` (held by current user or another user in real time), `RESERVED` (pending payment), `SOLD` (booked), `BLOCKED` (maintenance/venue restricted).
-  * Seat types: Standard, VIP, Couple (double width), Accessible.
+  * Seat types: Standard, VIP, Sweetbox (Couple / double width), Accessible.
   * Real-time WebSocket synchronization (shows other users' live selections with minimal latency).
 * **Transient 10-Minute Lock Timer**:
   * Upon selecting seats, a 10-minute lock is assigned in Redis.
@@ -27,17 +28,17 @@
   * Automatic release of seats back to `AVAILABLE` status if timer expires without completed payment.
 * **F&B Add-ons & Combos**:
   * Select popcorn, beverage, and candy combos alongside ticket purchase.
-  * Dynamic price calculation (Seat Prices * Modifiers + F&B Items).
-* **Secure Payment & Ticket Generation**:
-  * Mock/Stripe/VNPAY/MoMo payment gateway integration.
-  * Instant generation of HMAC-SHA256 encrypted QR ticket tokens.
+  * Dynamic price calculation (Seat Prices * Modifiers + F&B Items in VND integer).
+* **Mock VNPAY Payment & QR Ticket Generation**:
+  * **Mock VNPAY Gateway integration**: User redirected to Mock VNPAY sandbox page or presented with VNPAY payment QR generated via mock QR library.
+  * Instant generation of HMAC-SHA256 encrypted QR ticket tokens rendered via `qrcode.react`.
 * **User Dashboard & Booking History**:
   * Active tickets view with live renderable QR codes.
   * Historical receipts, invoice download, and booking status tracking.
 
 ### 2.2 Admin & Theater Operations (Backoffice)
 * **Cinema Cluster & Hall Management**:
-  * Configure cinema locations, hall names, screen types (IMAX, 4DX, Standard), projection equipment.
+  * Configure cinema locations, hall names, screen types (IMAX, 4DX, Standard, Gold Class), projection equipment.
   * **Dynamic Matrix Layout Builder**: Drag-and-drop or grid tool to define rows, columns, aisle gaps, seat types, and price modifiers.
 * **Showtime Scheduler Matrix**:
   * Visual schedule grid mapping movies to specific halls and time slots.
@@ -62,7 +63,7 @@
         ▼
 [ Redis Pub/Sub ] ──── Broadcast state ("HOLDING") to all connected clients
         │
-        │ (Proceeds to Payment)
+        │ (Proceeds to Mock VNPAY Payment)
         ▼
 [ Distributed Redlock ] ──► Key: `lock:seat:{showtime_id}:{seat_id}`
    ├──► Lock acquired?  ── Yes ──► [ Postgres Transaction ]
@@ -77,7 +78,8 @@
 
 1. **Step 1 (Transient Socket Selection)**: User clicks seat on matrix -> Frontend emits `seat:select` via Socket.io -> Backend attempts Redis `SET lock:seat:{showtime_id}:{seat_id} {user_id} NX EX 600`.
 2. **Step 2 (Conflict Handling)**: If key already exists in Redis, server emits error to client and HTTP 409 `SEAT_ALREADY_HELD` if called via REST.
-3. **Step 3 (Payment Checkout Transaction)**:
+3. **Step 3 (Mock VNPAY Payment Checkout Transaction)**:
+   * System generates Mock VNPAY payment URL & QR code payload.
    * Backend executes Redlock algorithm to ensure multi-node locking across Redis cluster.
    * Opens PostgreSQL SQL Transaction (`BEGIN`).
    * Queries seat rows with `SELECT status FROM showtime_seats WHERE showtime_id = $1 AND seat_id = $2 FOR UPDATE`.
@@ -124,7 +126,7 @@ To support ultra-fast, stateless check-ins at theater turnstiles without causing
   ```
 * **Signature**: `Base64URL(HMAC-SHA256(Base64URL(Payload), TICKET_HMAC_SECRET))`
 * **Turnstile Check-in Flow**:
-  1. Turnstile scanner reads QR code string.
+  1. Turnstile scanner reads QR code string rendered via mock QR library (`qrcode.react`).
   2. Server verifies `HMAC-SHA256` signature using `TICKET_HMAC_SECRET`.
   3. If signature matches and `exp` is valid, server performs quick atomic update on ticket check-in status (`status = 'CHECKED_IN'`).
   4. Access granted in < 50ms.
@@ -133,10 +135,10 @@ To support ultra-fast, stateless check-ins at theater turnstiles without causing
 
 ## 4. Environment & Stack Specifications
 
-* **Node.js**: `v20.x` LTS
-* **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Shadcn UI
-* **Backend**: Node.js, NestJS / Express, TypeScript, Prisma ORM / TypeORM
+* **Backend**: Node.js (`v20.x` LTS), NestJS / Express, TypeScript, Prisma ORM / TypeORM, `qrcode` mock library
+* **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Shadcn UI, `qrcode.react` (Polished CGV-inspired dark mode UI)
 * **Database**: PostgreSQL 16
 * **Cache & Distributed Lock**: Redis 7 (ioredis, Redlock)
+* **Payment Gateway**: Mock VNPAY Payment Gateway (Sandbox simulation flow)
 * **Real-time Protocol**: WebSockets / Socket.io
 * **Testing & Quality Assurance**: Vitest (Unit/Integration), Supertest (API HTTP tests), K6 (Concurrency load testing)

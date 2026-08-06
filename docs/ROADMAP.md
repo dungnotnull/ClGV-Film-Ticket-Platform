@@ -46,13 +46,14 @@ This document outlines the multi-phase engineering roadmap for building, scaling
 
 ---
 
-## 🍿 Phase 4: F&B Combos, Checkout & HMAC QR Generation
-* **Goal**: Allow users to select concession items, finalize payments, and receive secure, encrypted tickets.
+## 🍿 Phase 4: F&B Combos, Mock VNPAY Checkout & HMAC QR Generation
+* **Goal**: Allow users to select concession items, finalize payments via Mock VNPAY Sandbox Gateway, and receive secure, encrypted tickets rendered via mock QR code libraries (`qrcode` / `qrcode.react`).
 * **Tasks**:
   * [ ] F&B Combo Catalog Endpoints (`/api/v1/combos`).
+  * [ ] Mock VNPAY Payment Integration (`/api/v1/payments/vnpay/create-url`, `/api/v1/payments/vnpay/callback`).
   * [ ] Checkout & Booking Transaction Module (`/api/v1/bookings/checkout`).
   * [ ] PostgreSQL Pessimistic Transaction Engine (`SELECT ... FOR UPDATE` on seat rows).
-  * [ ] Cryptographic Ticket Token Generator (`HMAC-SHA256` token signing).
+  * [ ] Cryptographic Ticket Token Generator (`HMAC-SHA256` token signing & mock QR library rendering).
   * [ ] User Booking History & Interactive Ticket QR Code View.
 
 ---
