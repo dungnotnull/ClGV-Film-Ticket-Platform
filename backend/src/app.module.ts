@@ -24,4 +24,4 @@ import { HomeModule } from './modules/home/home.module';
     HomeModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

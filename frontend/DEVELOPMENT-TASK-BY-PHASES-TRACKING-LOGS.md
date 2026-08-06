@@ -3,24 +3,24 @@
 > **Note:** This log is strictly for the Frontend Agent to track detailed progress on frontend tasks according to CGV Standards.
 
 ## Phase 1: Foundation, Authentication & CGV Membership UI
-- [ ] Initialize Next.js 15 project (App Router) with TypeScript.
-- [ ] Setup Tailwind CSS, Shadcn UI, and React 19.
-- [ ] Configure Global State (Zustand/Redux) & API Client (Axios/Fetch with interceptors).
-- [ ] **Global UI:** Main Header (Logo, Navigation, User Menu, City Selector) & Footer.
-- [ ] **Authentication:** Login (Email/Password), Register UI, Forgot Password, Verify U22/FanC.
+- [x] Initialize Next.js 15 project (App Router) with TypeScript.
+- [x] Setup Tailwind CSS, Shadcn UI, and React 19.
+- [x] Configure Global State (Zustand/Redux) & API Client (Axios/Fetch with interceptors).
+- [x] **Global UI:** Main Header (Logo, Navigation, User Menu, City Selector) & Footer.
+- [x] **Authentication:** Login (Email/Password), Register UI, Forgot Password, Verify U22/FanC.
 
 ## Phase 2: Core Browsing & Discovery (Home, Movie, Cinema)
-- [ ] **Home Page (`/`)**:
-  - [ ] Dynamic Hero Banner Carousel (Promotions/Featured Movies).
-  - [ ] Tabbed Widget: "Phim Đang Chiếu" vs "Phim Sắp Chiếu".
-  - [ ] Promotional Sliders (CGV Promotions, Happy Wednesday, etc.).
-- [ ] **Movie Pages (`/movies`)**:
-  - [ ] Movie List with filters (Status, Genre, Format, Rating).
-  - [ ] Movie Detail (Poster, Trailer Modal, Synopsis, Cast, Duration, Reviews section).
-  - [ ] Integrated showtimes section.
-- [ ] **Cinema Pages (`/cinemas`)**:
-  - [ ] Cinema List grouped by City/Region.
-  - [ ] Cinema Detail (Info, Map, Facilities like IMAX, 4DX, Sweetbox, L'Amour).
+- [x] **Home Page (`/`)**:
+  - [x] Dynamic Hero Banner Carousel (Promotions/Featured Movies).
+  - [x] Tabbed Widget: "Phim Đang Chiếu" vs "Phim Sắp Chiếu".
+  - [x] Promotional Sliders (CGV Promotions, Happy Wednesday, etc.).
+- [x] **Movie Pages (`/movies`)**:
+  - [x] Movie List with filters (Status, Genre, Format, Rating).
+  - `[x]` Movie Detail (Poster, Trailer Modal, Synopsis, Cast, Duration, Reviews section).
+  - `[x]` Integrated showtimes section.
+- [x] **Cinema Pages (`/cinemas`)**:
+  - [x] Cinema List grouped by City/Region.
+  - `[x]` Cinema Detail (Info, Map, Facilities like IMAX, 4DX, Sweetbox, L'Amour).
 
 ## Phase 3: Real-time Seat Sync & Transient Locking
 - [ ] **Step 1: Showtime Selection:** Date Picker & Format Filter.
@@ -42,16 +42,16 @@
   - [ ] Redirect to Mock VNPAY URL / Show Mock VNPAY QR Code.
 
 ## Phase 5: Ticketing, User Dashboard & Admin CMS
-- [ ] **Ticketing & Dashboard (`/user`)**:
-  - [ ] Post-Payment Success Page with HMAC-SHA256 Encrypted E-Ticket (QR Code via `qrcode.react`).
-  - [ ] User Dashboard: Profile Settings, CGV Membership Tier (MEMBER, VIP, VVIP), CGV Card Wallet.
-  - [ ] Booking History & E-Ticket Viewer (Live QR Code display for turnstile scanner).
-- [ ] **Admin CMS & Cinema Operations (`/admin`)**:
-  - [ ] Admin Layout: Separate Route, Sidebar & Header.
-  - [ ] General CMS: Manage Movies, Banners, Cities, Cinemas, Combos, Vouchers.
-  - [ ] **Cinema Management**: Dynamic Room Matrix Layout Builder (Drag & Drop seat grid config).
-  - [ ] **Showtime Scheduler**: Matrix Visual Schedule Grid with Automated Conflict detection UI.
-  - [ ] **Analytics Dashboard**: Revenue Charts, Occupancy Rates, Member Analytics.
+- [x] **Ticketing & Dashboard (`/user`)**:
+  - [x] Post-Payment Success Page with HMAC-SHA256 Encrypted E-Ticket (QR Code via `qrcode.react`).
+  - [x] User Dashboard: Profile Settings, CGV Membership Tier (MEMBER, VIP, VVIP), CGV Card Wallet.
+  - [x] Booking History & E-Ticket Viewer (Live QR Code display for turnstile scanner).
+- [x] **Admin CMS & Cinema Operations (`/admin`)**:
+  - [x] Admin Layout: Separate Route, Sidebar & Header.
+  - [x] General CMS: Manage Movies, Banners, Cities, Cinemas, Combos, Vouchers.
+  - `[x]` **Cinema Management**: Dynamic Room Matrix Layout Builder (Drag & Drop seat grid config).
+  - `[x]` **Showtime Scheduler**: Matrix Visual Schedule Grid with Automated Conflict detection UI.
+  - `[x]` **Analytics Dashboard**: Revenue Charts, Occupancy Rates, Member Analytics.
 
 ## Phase 6: Optimization, Polish & E2E Testing
 - [ ] Implement SEO metadata (Title, Description) for Movie/Cinema pages.
