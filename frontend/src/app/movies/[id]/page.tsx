@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Play, Clock, Calendar, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { BookTicketButton } from '@/components/movie/book-ticket-button';
+import { BookTicketModal } from '@/components/movie/book-ticket-modal';
 
 async function getMovie(id: string) {
   try {
@@ -35,6 +35,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
 
   // Group showtimes by Date
   const showtimesByDate: Record<string, any[]> = {};
+
   if (movie.showtimes && movie.showtimes.length > 0) {
     movie.showtimes.forEach((st: any) => {
       const dateStr = new Date(st.startTime).toLocaleDateString('vi-VN');
@@ -70,7 +71,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
                 <span className="flex items-center gap-1"><Film className="w-4 h-4" /> {movie.genres?.join(', ')}</span>
               </div>
               <div className="pt-2">
-                <BookTicketButton movieId={movie.id} />
+                <BookTicketModal movie={movie} />
               </div>
             </div>
           </div>

@@ -71,8 +71,8 @@ export default function AdminShowtimesPage() {
       const movie = movies.find(m => m.id === formData.movieId);
       const duration = movie?.durationMinutes || 120;
       
-      const startDateTime = new Date(`${formData.date}T${formData.startTime}:00Z`);
-      // Adjust for UTC/Local mismatch in a real app, but for now just construct Date
+      // Tạo Date theo giờ địa phương bằng cách KHÔNG gắn thêm 'Z' (UTC)
+      const startDateTime = new Date(`${formData.date}T${formData.startTime}:00`);
       
       const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
 

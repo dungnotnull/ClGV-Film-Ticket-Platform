@@ -5,12 +5,18 @@ import { Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/useAuthStore';
 
-export function BookTicketButton({ movieId }: { movieId: string }) {
+export function BookTicketButton({ movieId, closestShowtimeId }: { movieId: string; closestShowtimeId?: string | null }) {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
 
   const handleBookTicket = () => {
-    // Luôn cho phép người dùng xem lịch chiếu và chọn ghế, chỉ yêu cầu đăng nhập ở bước thanh toán
+    if (closestShowtimeId) {
+      // Jump directly to the closest showtime's seat selection
+      router.push(`/booking/seats?showtimeId=${closestShowtimeId}`);
+      return;
+    }
+
+    // Fallback: scroll to showtimes or redirect to list
     const showtimeSection = document.getElementById('showtimes-section');
     if (showtimeSection) {
       showtimeSection.scrollIntoView({ behavior: 'smooth' });

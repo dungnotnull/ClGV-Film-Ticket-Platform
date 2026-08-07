@@ -3,11 +3,12 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import io, { Socket } from 'socket.io-client';
-import axios from 'axios';
+import { api } from '@/lib/axios';
 import { toast } from 'sonner';
 import { Clock, Monitor, ChevronRight, Armchair } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBookingStore } from '@/store/useBookingStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface Seat {
   id: string; // row + col e.g. A1
@@ -35,6 +36,7 @@ function SeatsContent() {
     setShowtime, 
     setReservation 
   } = useBookingStore();
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (!showtimeId) {
@@ -45,9 +47,9 @@ function SeatsContent() {
     // Fetch initial seat matrix
     const fetchMatrix = async () => {
       try {
-        const res = await axios.get(`http://localhost:4000/api/v1/showtimes/${showtimeId}/seats`);
-        if (res.data.success) {
-          const data = res.data.data;
+        const res: any = await api.get(`/showtimes/${showtimeId}/seats`);
+        if (res.success) {
+          const data = res.data;
           setMatrix(data.matrix);
           setBasePrice(data.basePrice || 100000);
           
@@ -120,10 +122,15 @@ function SeatsContent() {
         
         // If one of our selected seats is held by someone else, deselect it
         if (payload.status !== 'AVAILABLE') {
-          // Here we would ideally check if heldByUserId !== current user, but for now just a simple check
+          const currentUser = useAuthStore.getState().user;
+          // Check if it's held by the current user
+          if (payload.heldByUserId === currentUser?.id) {
+            return; // Ignore if the current user is holding it
+          }
+
           useBookingStore.setState((state) => {
             if (state.selectedSeats.find(s => s.id === payload.seatId)) {
-              toast.warning(`Ghế ${payload.seatId} vừa bị người khác chọn!`);
+              toast.warning(`Ghế ${payload.seatId} vừa bị đặt bởi người khác!`);
               return { selectedSeats: state.selectedSeats.filter(s => s.id !== payload.seatId) };
             }
             return state;
@@ -155,14 +162,20 @@ function SeatsContent() {
   const handleHoldSeats = async () => {
     if (selectedSeats.length === 0) return;
     
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để tiếp tục đặt vé');
+      router.push(`/login?redirect=/booking/seats?showtimeId=${showtimeId}`);
+      return;
+    }
+    
     try {
-      const res = await axios.post(`http://localhost:4000/api/v1/bookings/hold-seat`, {
+      const res: any = await api.post(`/bookings/hold-seat`, {
         showtimeId,
         seatIds: selectedSeats.map(s => s.id)
       });
       
-      if (res.data.success) {
-        setReservation(res.data.data.reservationId, res.data.data.expiresAt);
+      if (res.success) {
+        setReservation(res.data.reservationId, res.data.expiresAt);
         router.push('/booking/fb');
       }
     } catch (error: any) {
