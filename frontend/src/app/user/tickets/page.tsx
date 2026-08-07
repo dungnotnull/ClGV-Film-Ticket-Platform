@@ -21,7 +21,7 @@ export default function MyTicketsPage() {
 
     const fetchTickets = async () => {
       try {
-        const res = await api.get('/bookings/my-tickets');
+        const res = await api.get('/tickets/my-tickets');
         if (res.success) {
           setTickets(res.data.tickets || []);
         }
