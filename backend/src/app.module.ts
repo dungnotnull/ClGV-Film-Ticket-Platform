@@ -16,6 +16,8 @@ import { CGVCardModule } from './modules/cgv-card/cgv-card.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { TicketModule } from './modules/ticket/ticket.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { TicketModule } from './modules/ticket/ticket.module';
     RedisModule,
     WebsocketModule,
     AuthModule,
+    UsersModule,
     CityModule,
     CinemaModule,
     BannerModule,
@@ -38,6 +41,7 @@ import { TicketModule } from './modules/ticket/ticket.module';
     PaymentModule,
     BookingModule,
     TicketModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}
