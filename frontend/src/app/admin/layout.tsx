@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Film, MapPin, Users, Settings, LogOut, CalendarRange, Image as ImageIcon } from 'lucide-react';
+import { LayoutDashboard, Film, MapPin, Users, Settings, LogOut, CalendarRange, Image as ImageIcon, Building2, Popcorn, Ticket, QrCode } from 'lucide-react';
 import { Oswald } from 'next/font/google';
 
 const oswald = Oswald({ subsets: ['latin', 'vietnamese'] });
@@ -82,6 +82,23 @@ export default function AdminLayout({
           <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
             <Settings className="h-5 w-5" />
             Cấu hình
+          </Link>
+          <div className="pt-4 mt-4 border-t border-border/50" />
+          <Link href="/admin/cities" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
+            <Building2 className="h-5 w-5" />
+            Thành Phố
+          </Link>
+          <Link href="/admin/combos" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
+            <Popcorn className="h-5 w-5" />
+            Bắp Nước
+          </Link>
+          <Link href="/admin/vouchers" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
+            <Ticket className="h-5 w-5" />
+            Mã Giảm Giá
+          </Link>
+          <Link href="/admin/tickets/scan" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
+            <QrCode className="h-5 w-5" />
+            Soát Vé (Scan QR)
           </Link>
         </nav>
         

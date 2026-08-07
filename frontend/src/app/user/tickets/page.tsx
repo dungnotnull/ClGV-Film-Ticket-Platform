@@ -40,7 +40,7 @@ export default function MyTicketsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="p-8">
       <h1 className="text-3xl font-bold mb-8 border-l-4 border-primary pl-4">Vé Của Tôi</h1>
       
       {tickets.length > 0 ? (

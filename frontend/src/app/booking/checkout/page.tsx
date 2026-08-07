@@ -60,19 +60,12 @@ export default function CheckoutPage() {
         const { bookingId, paymentUrl, paymentQrPayload } = res.data.data;
         
         if (paymentMethod === 'VNPAY') {
-          // If we receive a QR payload from Mock VNPAY, we can display it.
-          // Otherwise we redirect to paymentUrl. For this UI, we will simulate showing the QR code
-          // and auto-redirecting to success after 3 seconds.
-          setBookingId(bookingId);
-          setPaymentQr(paymentQrPayload || `MOCK_VNPAY_QR_${bookingId}`);
-          
-          toast.info('Quét mã QR bằng ứng dụng ngân hàng hoặc VNPAY để thanh toán');
-          
-          // Simulate webhook callback after 3 seconds
-          setTimeout(() => {
-            resetBooking();
-            router.push(`/booking/success?bookingId=${bookingId}`);
-          }, 3000);
+          // Rewrite the backend mock gateway URL to the frontend's mock gateway
+          const frontendPaymentUrl = paymentUrl.replace(
+            'http://localhost:4000/api/v1/payments/vnpay/mock-gateway',
+            'http://localhost:3000/payment/mock-gateway'
+          );
+          window.location.href = frontendPaymentUrl;
         } else {
           // CGV Card deducts balance immediately
           toast.success('Thanh toán thành công bằng ví CGV!');
@@ -87,6 +80,22 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleCancelBooking = async () => {
+    try {
+      await axios.post(
+        'http://localhost:4000/api/v1/bookings/release-seat',
+        { reservationId },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      toast.info('Đã hủy giữ ghế.');
+      resetBooking();
+      router.push('/booking/showtimes');
+    } catch (error) {
+      console.error(error);
+      toast.error('Có lỗi xảy ra khi hủy giữ ghế.');
+    }
+  };
+
   const seatsTotal = selectedSeats.reduce((acc, seat) => acc + seat.price, 0);
   const combosTotal = combos.reduce((acc, combo) => acc + combo.price * combo.quantity, 0);
 
@@ -95,11 +104,16 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-background py-12">
       <div className="container mx-auto px-4 max-w-5xl">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ChevronLeft className="w-6 h-6" />
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+              <ChevronLeft className="w-6 h-6" />
+            </Button>
+            <h1 className="text-3xl font-bold text-primary">Thanh Toán</h1>
+          </div>
+          <Button variant="destructive" variant="outline" className="border-destructive text-destructive hover:bg-destructive hover:text-white" onClick={handleCancelBooking}>
+            Hủy Đặt Vé
           </Button>
-          <h1 className="text-3xl font-bold text-primary">Thanh Toán</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
