@@ -1,82 +1,108 @@
-import { PrismaClient, Role, MovieStatus, AgeRating, ScreenType, BannerStatus } from '@prisma/client';
+import { PrismaClient, Role, MovieStatus, AgeRating, ScreenType, BannerStatus, SeatStatus, BookingStatus, TicketStatus, MembershipTier } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
+  console.log('🌱 Starting comprehensive database seeding...');
 
-  // 1. Seed Admin & Customer Users
-  const adminPassword = await bcrypt.hash('AdminPassword123!', 10);
-  const customerPassword = await bcrypt.hash('CustomerPassword123!', 10);
+  // Clear existing data cleanly in correct order
+  await prisma.ticket.deleteMany();
+  await prisma.booking.deleteMany();
+  await prisma.showtimeSeat.deleteMany();
+  await prisma.showtime.deleteMany();
+  await prisma.banner.deleteMany();
+  await prisma.movieReview.deleteMany();
+  await prisma.movie.deleteMany();
+  await prisma.hall.deleteMany();
+  await prisma.cinema.deleteMany();
+  await prisma.city.deleteMany();
+  await prisma.refreshToken.deleteMany();
+  await prisma.user.deleteMany();
 
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@clgv.vn' },
-    update: {},
-    create: {
+  // 1. Seed Users (Admin, VIP, U22, Members)
+  const passwordHash = await bcrypt.hash('Password123!', 10);
+
+  const admin = await prisma.user.create({
+    data: {
       email: 'admin@clgv.vn',
-      password: adminPassword,
-      fullName: 'Quản Trị Viên ClGV',
+      password: passwordHash,
+      fullName: 'Quản Trị Viên CGV',
       phone: '0900000001',
       role: Role.ADMIN,
+      membershipTier: MembershipTier.VVIP,
+      points: 2500,
+      cgvCardBalance: 5000000,
     },
   });
 
-  const customer = await prisma.user.upsert({
-    where: { email: 'customer@clgv.vn' },
-    update: {},
-    create: {
+  const customer1 = await prisma.user.create({
+    data: {
       email: 'customer@clgv.vn',
-      password: customerPassword,
+      password: passwordHash,
       fullName: 'Nguyễn Văn Khách',
       phone: '0909999999',
       role: Role.CUSTOMER,
+      membershipTier: MembershipTier.VIP,
+      points: 450,
+      cgvCardBalance: 750000,
+      isU22Verified: true,
     },
   });
 
-  console.log('✅ Users seeded:', { admin: admin.email, customer: customer.email });
+  const customer2 = await prisma.user.create({
+    data: {
+      email: 'u22.student@clgv.vn',
+      password: passwordHash,
+      fullName: 'Trần Thị Học Sinh (U22)',
+      phone: '0912345678',
+      role: Role.CUSTOMER,
+      membershipTier: MembershipTier.U22_FANC,
+      points: 120,
+      cgvCardBalance: 300000,
+      isU22Verified: true,
+    },
+  });
+
+  const customer3 = await prisma.user.create({
+    data: {
+      email: 'vvip.member@clgv.vn',
+      password: passwordHash,
+      fullName: 'Lê Hoàng VIP',
+      phone: '0988888888',
+      role: Role.CUSTOMER,
+      membershipTier: MembershipTier.VVIP,
+      points: 1800,
+      cgvCardBalance: 2500000,
+    },
+  });
+
+  console.log('✅ Users seeded successfully!');
 
   // 2. Seed Cities
-  const cityHCM = await prisma.city.upsert({
-    where: { code: 'HCM' },
-    update: {},
-    create: {
-      name: 'TP. Hồ Chí Minh',
-      code: 'HCM',
-      displayOrder: 1,
-    },
+  const cityHCM = await prisma.city.create({
+    data: { name: 'TP. Hồ Chí Minh', code: 'HCM', displayOrder: 1 },
+  });
+  const cityHN = await prisma.city.create({
+    data: { name: 'Hà Nội', code: 'HN', displayOrder: 2 },
+  });
+  const cityDN = await prisma.city.create({
+    data: { name: 'Đà Nẵng', code: 'DN', displayOrder: 3 },
+  });
+  const cityCT = await prisma.city.create({
+    data: { name: 'Cần Thơ', code: 'CT', displayOrder: 4 },
   });
 
-  const cityHN = await prisma.city.upsert({
-    where: { code: 'HN' },
-    update: {},
-    create: {
-      name: 'Hà Nội',
-      code: 'HN',
-      displayOrder: 2,
-    },
-  });
-
-  const cityDN = await prisma.city.upsert({
-    where: { code: 'DN' },
-    update: {},
-    create: {
-      name: 'Đà Nẵng',
-      code: 'DN',
-      displayOrder: 3,
-    },
-  });
-
-  console.log('✅ Cities seeded:', [cityHCM.name, cityHN.name, cityDN.name]);
+  console.log('✅ Cities seeded:', [cityHCM.name, cityHN.name, cityDN.name, cityCT.name]);
 
   // 3. Seed Cinema Clusters
   const cgvVincomHCM = await prisma.cinema.create({
     data: {
       cityId: cityHCM.id,
       name: 'CGV Vincom Đồng Khởi',
-      address: '72 Lê Thánh Tôn, Q.1, TP.HCM',
+      address: 'Tầng 3, Vincom Center, 72 Lê Thánh Tôn, Q.1, TP.HCM',
       phone: '1900 6017',
-      amenities: ['Bãi đậu xe', 'Popcorn Bar', 'L\'Amour Bed', 'IMAX Screen'],
+      amenities: ['Bãi đậu xe', 'Popcorn Bar', 'L\'Amour Bed', 'IMAX Laser', 'Gold Class'],
     },
   });
 
@@ -84,9 +110,9 @@ async function main() {
     data: {
       cityId: cityHCM.id,
       name: 'CGV Crescent Mall',
-      address: '101 Tôn Dật Tiên, Q.7, TP.HCM',
+      address: 'Tầng 5, Crescent Mall, 101 Tôn Dật Tiên, Q.7, TP.HCM',
       phone: '1900 6017',
-      amenities: ['Bãi đậu xe', 'Popcorn Bar', 'Gold Class'],
+      amenities: ['Bãi đậu xe', 'Popcorn Bar', '4DX Screen'],
     },
   });
 
@@ -94,73 +120,93 @@ async function main() {
     data: {
       cityId: cityHN.id,
       name: 'CGV Vincom Bà Triệu',
-      address: '191 Bà Triệu, Q.Hai Bà Trưng, Hà Nội',
+      address: 'Tầng 6, Vincom Center, 191 Bà Triệu, Q.Hai Bà Trưng, Hà Nội',
       phone: '1900 6017',
-      amenities: ['Bãi đậu xe', 'Popcorn Bar', '4DX Screen'],
+      amenities: ['Bãi đậu xe', 'Popcorn Bar', 'IMAX Screen'],
     },
   });
 
-  console.log('✅ Cinemas seeded:', [cgvVincomHCM.name, cgvCrescentMall.name, cgvBaTrieuHN.name]);
+  const cgvVinhTrungDN = await prisma.cinema.create({
+    data: {
+      cityId: cityDN.id,
+      name: 'CGV Vĩnh Trung Plaza',
+      address: '255-257 Hùng Vương, Q.Thanh Khê, Đà Nẵng',
+      phone: '1900 6017',
+      amenities: ['Bãi đậu xe', 'Popcorn Bar'],
+    },
+  });
 
-  // Sample Room Matrix Layout
-  const sampleMatrixJSON = {
-    dimensions: { rows: 8, cols: 12 },
-    aisles: { vertical: [4, 8], horizontal: [4] },
-    grid: [
-      [
-        { id: 'A1', row: 'A', col: 1, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-        { id: 'A2', row: 'A', col: 2, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-        { id: 'A3', row: 'A', col: 3, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-        { id: 'A4', row: 'A', col: 4, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-        { id: 'A5', row: 'A', col: 5, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-        { id: 'A6', row: 'A', col: 6, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-        { id: 'A7', row: 'A', col: 7, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-        { id: 'A8', row: 'A', col: 8, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-        { id: 'A9', row: 'A', col: 9, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-        { id: 'A10', row: 'A', col: 10, type: 'STANDARD', priceModifier: 1.0, isBlocked: false },
-      ],
-      [
-        { id: 'B1', row: 'B', col: 1, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-        { id: 'B2', row: 'B', col: 2, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-        { id: 'B3', row: 'B', col: 3, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-        { id: 'B4', row: 'B', col: 4, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-        { id: 'B5', row: 'B', col: 5, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-        { id: 'B6', row: 'B', col: 6, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-        { id: 'B7', row: 'B', col: 7, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-        { id: 'B8', row: 'B', col: 8, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-        { id: 'B9', row: 'B', col: 9, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-        { id: 'B10', row: 'B', col: 10, type: 'VIP', priceModifier: 1.25, isBlocked: false },
-      ],
-      [
-        { id: 'C1', row: 'C', col: 1, type: 'COUPLE', priceModifier: 1.8, isBlocked: false },
-        { id: 'C2', row: 'C', col: 2, type: 'COUPLE', priceModifier: 1.8, isBlocked: false },
-        { id: 'C3', row: 'C', col: 3, type: 'COUPLE', priceModifier: 1.8, isBlocked: false },
-        { id: 'C4', row: 'C', col: 4, type: 'COUPLE', priceModifier: 1.8, isBlocked: false },
-        { id: 'C5', row: 'C', col: 5, type: 'COUPLE', priceModifier: 1.8, isBlocked: false },
-      ],
-    ],
+  console.log('✅ Cinemas seeded');
+
+  // Room Matrix JSON Template (8 rows x 10 cols = 80 seats)
+  const generateMatrix = () => {
+    const grid: any[] = [];
+    const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    for (let r = 0; r < rows.length; r++) {
+      const rowName = rows[r];
+      const rowSeats: any[] = [];
+      let type = 'STANDARD';
+      let priceModifier = 1.0;
+
+      if (['D', 'E', 'F'].includes(rowName)) {
+        type = 'VIP';
+        priceModifier = 1.25;
+      } else if (rowName === 'H') {
+        type = 'COUPLE';
+        priceModifier = 1.8;
+      }
+
+      for (let c = 1; c <= 10; c++) {
+        rowSeats.push({
+          id: `${rowName}${c}`,
+          row: rowName,
+          col: c,
+          type,
+          priceModifier,
+          isBlocked: false,
+        });
+      }
+      grid.push(rowSeats);
+    }
+
+    return {
+      dimensions: { rows: 8, cols: 10 },
+      aisles: { vertical: [3, 7], horizontal: [4] },
+      grid,
+    };
   };
 
+  const matrixData = generateMatrix();
+
   // 4. Seed Halls
-  const hallIMAX = await prisma.hall.create({
+  const hallIMAX_HCM = await prisma.hall.create({
     data: {
       cinemaId: cgvVincomHCM.id,
       name: 'Phòng 01 (IMAX Laser)',
       screenType: ScreenType.IMAX,
-      roomMatrix: sampleMatrixJSON,
+      roomMatrix: matrixData,
     },
   });
 
-  const hallStandard = await prisma.hall.create({
+  const hall4DX_HCM = await prisma.hall.create({
     data: {
       cinemaId: cgvVincomHCM.id,
-      name: 'Phòng 02 (Standard)',
-      screenType: ScreenType.STANDARD,
-      roomMatrix: sampleMatrixJSON,
+      name: 'Phòng 02 (4DX)',
+      screenType: ScreenType.FOUR_DX,
+      roomMatrix: matrixData,
     },
   });
 
-  console.log('✅ Halls seeded:', [hallIMAX.name, hallStandard.name]);
+  const hallStandard_HN = await prisma.hall.create({
+    data: {
+      cinemaId: cgvBaTrieuHN.id,
+      name: 'Phòng 01 (Standard 2D)',
+      screenType: ScreenType.STANDARD,
+      roomMatrix: matrixData,
+    },
+  });
+
+  console.log('✅ Halls seeded');
 
   // 5. Seed Movies
   const movieMai = await prisma.movie.create({
@@ -168,7 +214,7 @@ async function main() {
       title: 'Mai',
       titleOriginal: 'Mai (2024)',
       director: 'Trấn Thành',
-      cast: 'Phương Anh Đào, Tuấn Trần, Hồng Đào',
+      cast: 'Phương Anh Đào, Tuấn Trần, Hồng Đào, Quốc Khánh',
       genres: ['Tâm lý', 'Tình cảm', 'Gia đình'],
       durationMinutes: 131,
       releaseDate: new Date('2024-02-10'),
@@ -177,7 +223,7 @@ async function main() {
       ageRating: AgeRating.T18,
       languageType: 'SUB',
       status: MovieStatus.NOW_SHOWING,
-      description: 'Mai xoay quanh câu chuyện về cuộc đời của một người phụ nữ làm nghề mát-xa tên Mai với nhiều trắc trở...',
+      description: 'Mai xoay quanh câu chuyện về cuộc đời của một người phụ nữ làm nghề mát-xa tên Mai với nhiều trắc trở và bi kịch gia đình...',
     },
   });
 
@@ -186,8 +232,8 @@ async function main() {
       title: 'Dune: Hành Tinh Cát - Phần 2',
       titleOriginal: 'Dune: Part Two',
       director: 'Denis Villeneuve',
-      cast: 'Timothée Chalamet, Zendaya, Rebecca Ferguson',
-      genres: ['Hành động', 'Khoa học viễn tưởng'],
+      cast: 'Timothée Chalamet, Zendaya, Rebecca Ferguson, Javier Bardem',
+      genres: ['Hành động', 'Khoa học viễn tưởng', 'Phiêu lưu'],
       durationMinutes: 166,
       releaseDate: new Date('2024-03-01'),
       posterUrl: 'https://images.cgv.vn/media/catalog/product/cache/1/image/1800x/040ec09b1e35df139433887a97daa66f/d/u/dune_part_two_poster.jpg',
@@ -195,7 +241,25 @@ async function main() {
       ageRating: AgeRating.T16,
       languageType: 'SUB',
       status: MovieStatus.NOW_SHOWING,
-      description: 'Hành trình trả thù của Paul Atreides chống lại những kẻ đã phá hủy gia đình anh...',
+      description: 'Hành trình trả thù của Paul Atreides chống lại những kẻ đã phá hủy gia đình anh và định mệnh định đoạt tương lai vũ trụ...',
+    },
+  });
+
+  const movieDeadpool = await prisma.movie.create({
+    data: {
+      title: 'Deadpool & Wolverine',
+      titleOriginal: 'Deadpool & Wolverine',
+      director: 'Shawn Levy',
+      cast: 'Ryan Reynolds, Hugh Jackman, Emma Corrin',
+      genres: ['Hành động', 'Hài hước', 'Sci-Fi'],
+      durationMinutes: 128,
+      releaseDate: new Date('2024-07-26'),
+      posterUrl: 'https://images.cgv.vn/media/catalog/product/cache/1/image/1800x/040ec09b1e35df139433887a97daa66f/d/p/deadpool_wolverine_poster.jpg',
+      trailerUrl: 'https://www.youtube.com/watch?v=73_1biulkYk',
+      ageRating: AgeRating.T18,
+      languageType: 'SUB',
+      status: MovieStatus.NOW_SHOWING,
+      description: 'Sự kết hợp bùng nổ giữa Thánh Bựa Deadpool và Người Sói Wolverine trong vũ trụ điện ảnh Marvel...',
     },
   });
 
@@ -213,27 +277,34 @@ async function main() {
       ageRating: AgeRating.P,
       languageType: 'SUB',
       status: MovieStatus.COMING_SOON,
-      description: 'Phần thứ ba trong loạt phim bom tấn Avatar của đạo diễn James Cameron...',
+      description: 'Phần thứ ba trong loạt phim bom tấn vĩ đại Avatar khám phá tộc người Tro Tàn (Ash People) nguy hiểm trên hành tinh Pandora...',
     },
   });
 
-  console.log('✅ Movies seeded:', [movieMai.title, movieDune.title, movieAvatar3.title]);
+  console.log('✅ Movies seeded:', [movieMai.title, movieDune.title, movieDeadpool.title, movieAvatar3.title]);
 
   // 6. Seed Banners
   await prisma.banner.createMany({
     data: [
       {
-        title: 'Thứ Tư Vui Vẻ - Vé Chỉ Từ 55K',
+        title: 'Thứ Tư Vui Vẻ - Vé Đồng Giá Chỉ 55.000 VNĐ',
         imageUrl: 'https://images.cgv.vn/media/banner/happy-wednesday-banner.jpg',
         linkUrl: '/promotions/happy-wednesday',
         displayOrder: 1,
         status: BannerStatus.ACTIVE,
       },
       {
-        title: 'Ưu Đãi Hội Viên U22 HSSV',
+        title: 'Ưu Đãi Hội Viên U22 HSSV - Vé Chỉ 45.000 VNĐ',
         imageUrl: 'https://images.cgv.vn/media/banner/u22-student-banner.jpg',
         linkUrl: '/promotions/u22-fanc',
         displayOrder: 2,
+        status: BannerStatus.ACTIVE,
+      },
+      {
+        title: 'Trải Nghiệm Công Nghệ IMAX Laser Đỉnh Cao Tại CGV Vincom Đồng Khởi',
+        imageUrl: 'https://images.cgv.vn/media/banner/imax-laser-banner.jpg',
+        linkUrl: '/cinemas',
+        displayOrder: 3,
         status: BannerStatus.ACTIVE,
       },
     ],
@@ -241,36 +312,116 @@ async function main() {
 
   console.log('✅ Banners seeded');
 
-  // 7. Seed Showtimes
-  const now = new Date();
-  const startTime1 = new Date(now.getTime() + 2 * 3600 * 1000); // 2 hours from now
-  const endTime1 = new Date(startTime1.getTime() + 2 * 3600 * 1000);
+  // 7. Seed Showtimes & ShowtimeSeats
+  const today = new Date();
+  const showtimeTime1 = new Date(today.getTime() + 2 * 3600 * 1000); // 2 hours from now
+  const showtimeTime2 = new Date(today.getTime() + 5 * 3600 * 1000); // 5 hours from now
+  const showtimeTime3 = new Date(today.getTime() + 24 * 3600 * 1000); // Tomorrow
 
-  const showtime1 = await prisma.showtime.create({
+  const st1 = await prisma.showtime.create({
     data: {
       movieId: movieMai.id,
       cinemaId: cgvVincomHCM.id,
-      hallId: hallIMAX.id,
-      startTime: startTime1,
-      endTime: endTime1,
+      hallId: hallIMAX_HCM.id,
+      startTime: showtimeTime1,
+      endTime: new Date(showtimeTime1.getTime() + 131 * 60 * 1000),
       basePrice: 130000,
     },
   });
 
-  // Seed seats for showtime1
-  await prisma.showtimeSeat.createMany({
+  const st2 = await prisma.showtime.create({
+    data: {
+      movieId: movieDune.id,
+      cinemaId: cgvVincomHCM.id,
+      hallId: hall4DX_HCM.id,
+      startTime: showtimeTime2,
+      endTime: new Date(showtimeTime2.getTime() + 166 * 60 * 1000),
+      basePrice: 160000,
+    },
+  });
+
+  const st3 = await prisma.showtime.create({
+    data: {
+      movieId: movieDeadpool.id,
+      cinemaId: cgvBaTrieuHN.id,
+      hallId: hallStandard_HN.id,
+      startTime: showtimeTime3,
+      endTime: new Date(showtimeTime3.getTime() + 128 * 60 * 1000),
+      basePrice: 110000,
+    },
+  });
+
+  // Seed ShowtimeSeats for st1
+  const seatsToCreate: any[] = [];
+  const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  for (const r of rows) {
+    for (let c = 1; c <= 10; c++) {
+      let status: SeatStatus = SeatStatus.AVAILABLE;
+      if (r === 'D' && (c === 4 || c === 5)) {
+        status = SeatStatus.SOLD;
+      }
+      seatsToCreate.push({
+        showtimeId: st1.id,
+        seatId: `${r}${c}`,
+        row: r,
+        col: c,
+        type: ['D', 'E', 'F'].includes(r) ? 'VIP' : r === 'H' ? 'COUPLE' : 'STANDARD',
+        status,
+        priceModifier: ['D', 'E', 'F'].includes(r) ? 1.25 : r === 'H' ? 1.8 : 1.0,
+      });
+    }
+  }
+  await prisma.showtimeSeat.createMany({ data: seatsToCreate });
+
+  console.log('✅ Showtimes & Seats seeded');
+
+  // 8. Seed Bookings & Tickets (Paid & Completed)
+  const booking1 = await prisma.booking.create({
+    data: {
+      userId: customer1.id,
+      showtimeId: st1.id,
+      totalAmount: 325000, // 2 VIP seats
+      status: BookingStatus.PAID,
+      paymentMethod: 'VNPAY',
+      tickets: {
+        create: [
+          {
+            seatId: 'D4',
+            qrToken: 'HMAC_TOKEN_D4_PAID_CHECKED_IN',
+            status: TicketStatus.CHECKED_IN,
+          },
+          {
+            seatId: 'D5',
+            qrToken: 'HMAC_TOKEN_D5_PAID_UNUSED',
+            status: TicketStatus.UNUSED,
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('✅ Bookings & E-Tickets seeded');
+
+  // 9. Seed Reviews
+  await prisma.movieReview.createMany({
     data: [
-      { showtimeId: showtime1.id, seatId: 'A1', row: 'A', col: 1, type: 'STANDARD', priceModifier: 1.0 },
-      { showtimeId: showtime1.id, seatId: 'A2', row: 'A', col: 2, type: 'STANDARD', priceModifier: 1.0 },
-      { showtimeId: showtime1.id, seatId: 'B1', row: 'B', col: 1, type: 'VIP', priceModifier: 1.25 },
-      { showtimeId: showtime1.id, seatId: 'B2', row: 'B', col: 2, type: 'VIP', priceModifier: 1.25 },
-      { showtimeId: showtime1.id, seatId: 'C1', row: 'C', col: 1, type: 'COUPLE', priceModifier: 1.8 },
+      {
+        movieId: movieMai.id,
+        userId: customer1.id,
+        rating: 5,
+        comment: 'Phim rất xúc động và chân thực! Diễn xuất của Phương Anh Đào xuất sắc.',
+      },
+      {
+        movieId: movieDune.id,
+        userId: customer2.id,
+        rating: 5,
+        comment: 'Hình ảnh âm thanh hoành tráng đỉnh cao! Xứng đáng xem IMAX.',
+      },
     ],
   });
 
-  console.log('✅ Showtimes seeded');
-
-  console.log('🎉 Seeding completed successfully!');
+  console.log('✅ Movie Reviews seeded');
+  console.log('🎉 Comprehensive Database Seeding Completed Successfully!');
 }
 
 main()

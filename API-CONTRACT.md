@@ -97,6 +97,33 @@ Base URL: `http://localhost:4000/api/v1`
 
 ---
 
+### 2.1b Admin User Management (`/admin/users`) *(Admin Only)*
+
+#### `GET /admin/users`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Query Parameters**: `role` (`CUSTOMER`, `ADMIN`, `SCANNER`), `membershipTier` (`MEMBER`, `U22_FANC`, `VIP`, `VVIP`), `search`, `page`, `limit`
+* **Response `200 OK`**: Paginated array of user objects excluding passwords.
+
+#### `GET /admin/users/{id}`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Response `200 OK`**: User profile detail including recent booking history and ticket counts.
+
+#### `PUT /admin/users/{id}/role`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Request Payload**: `{ "role": "ADMIN" }`
+* **Response `200 OK`**: Updated user object with new role.
+
+#### `PUT /admin/users/{id}/membership`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Request Payload**: `{ "membershipTier": "VIP", "points": 500, "cgvCardBalance": 1000000, "isU22Verified": true }`
+* **Response `200 OK`**: Updated user object with new tier and balance values.
+
+#### `DELETE /admin/users/{id}`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Response `200 OK`**: `{ "success": true, "message": "Xóa người dùng thành công" }`
+
+---
+
 ### 2.2 Cities & Dynamic Homepage Aggregator (`/cities`, `/admin/cities`, `/home`)
 
 #### `GET /cities`

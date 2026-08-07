@@ -25,6 +25,11 @@
   - [x] `GET /api/v1/auth/me`: API lấy thông tin cá nhân, hạng hội viên CGV, số điểm CGV Rewards & số dư thẻ CGV Card.
   - [x] `PUT /api/v1/auth/profile`: API cập nhật thông tin cá nhân (Họ tên, SĐT, Ngày sinh để nhận quà sinh nhật).
   - [x] `POST /api/v1/auth/verify-u22`: API xác minh độ tuổi U22/FanC (12-22 tuổi) để hưởng giá vé ưu đãi HSSV.
+  - [x] `GET /api/v1/admin/users`: API Admin xem danh sách người dùng (lọc theo role, hạng thẻ, search, phân trang).
+  - [x] `GET /api/v1/admin/users/:id`: API Admin xem chi tiết người dùng kèm đơn hàng.
+  - [x] `PUT /api/v1/admin/users/:id/role`: API Admin phân quyền người dùng (`CUSTOMER`, `ADMIN`, `SCANNER`).
+  - [x] `PUT /api/v1/admin/users/:id/membership`: API Admin cập nhật hạng hội viên, điểm thưởng CGV Rewards, ví CGV Card.
+  - [x] `DELETE /api/v1/admin/users/:id`: API Admin xóa tài khoản người dùng.
 
 ---
 

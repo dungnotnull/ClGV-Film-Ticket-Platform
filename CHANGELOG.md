@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.4.0] - 2026-08-06
 
 ### Added
+- **Admin User Management Module (`src/modules/users`)**:
+  - Implemented `GET /api/v1/admin/users` (paginated list filtered by role, tier, search).
+  - Implemented `GET /api/v1/admin/users/:id` (detailed user profile with booking history).
+  - Implemented `PUT /api/v1/admin/users/:id/role` (assign role `CUSTOMER`, `ADMIN`, `SCANNER`).
+  - Implemented `PUT /api/v1/admin/users/:id/membership` (update tier `MEMBER`/`VIP`/`VVIP`, points, or CGV Card balance).
+  - Implemented `DELETE /api/v1/admin/users/:id` (delete user account).
 - **Phase 3 Real-time Seat Sync & Distributed Redlock Engine**:
   - Implemented `RedisService` (`src/modules/redis`) for Redlock transient seat locking (`lock:seat:{showtimeId}:{seatId}`) with 10-minute TTL and Keyspace Expiration listeners.
   - Implemented `WebsocketGateway` (`src/modules/websocket`) for real-time room streaming (`join:showtime`, `seat:select`, `seat:deselect`, `seat:state_changed`).
