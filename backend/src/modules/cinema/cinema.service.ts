@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCinemaDto } from './dto/create-cinema.dto';
 import { CreateHallDto } from './dto/create-hall.dto';
@@ -21,10 +21,24 @@ export class CinemaService {
       });
     }
 
+    // Kiểm tra không cho phép trùng tên rạp chiếu trong hệ thống
+    const existingCinema = await this.prisma.cinema.findFirst({
+      where: {
+        name: { equals: createCinemaDto.name.trim(), mode: 'insensitive' },
+      },
+    });
+
+    if (existingCinema) {
+      throw new ConflictException({
+        code: 'DUPLICATE_CINEMA_NAME',
+        message: 'Tên cụm rạp đã tồn tại trong hệ thống',
+      });
+    }
+
     return this.prisma.cinema.create({
       data: {
         cityId: createCinemaDto.cityId,
-        name: createCinemaDto.name,
+        name: createCinemaDto.name.trim(),
         address: createCinemaDto.address,
         phone: createCinemaDto.phone,
         amenities: createCinemaDto.amenities || [],
@@ -71,10 +85,25 @@ export class CinemaService {
   async createHall(createHallDto: CreateHallDto) {
     await this.findOneCinema(createHallDto.cinemaId);
 
+    // Kiểm tra không cho phép trùng tên phòng chiếu trong cùng 1 rạp
+    const existingHall = await this.prisma.hall.findFirst({
+      where: {
+        cinemaId: createHallDto.cinemaId,
+        name: { equals: createHallDto.name.trim(), mode: 'insensitive' },
+      },
+    });
+
+    if (existingHall) {
+      throw new ConflictException({
+        code: 'DUPLICATE_HALL_NAME',
+        message: 'Tên phòng chiếu đã tồn tại trong rạp này',
+      });
+    }
+
     return this.prisma.hall.create({
       data: {
         cinemaId: createHallDto.cinemaId,
-        name: createHallDto.name,
+        name: createHallDto.name.trim(),
         screenType: createHallDto.screenType,
         roomMatrix: createHallDto.roomMatrix,
       },

@@ -51,6 +51,8 @@ Base URL: `http://localhost:4000/api/v1`
 | `404` | `NOT_FOUND` | Resource (Movie, Showtime, Seat) not found |
 | `409` | `SEAT_ALREADY_HELD` | Seat locked by another user in Redis/DB |
 | `409` | `SHOWTIME_CONFLICT` | Showtime schedule overlaps with existing projection/cleaning buffer |
+| `409` | `DUPLICATE_CINEMA_NAME` | Cinema cluster name already exists in system |
+| `409` | `DUPLICATE_HALL_NAME` | Hall/room name already exists in cinema cluster |
 | `422` | `TICKET_EXPIRED` | QR Ticket past expiration time |
 | `422` | `INVALID_HMAC_SIGNATURE` | Tampered or invalid HMAC-SHA256 signature on QR scan |
 | `500` | `INTERNAL_SERVER_ERROR` | Unexpected backend server error |
@@ -58,6 +60,27 @@ Base URL: `http://localhost:4000/api/v1`
 ---
 
 ## 2. REST API Endpoints
+
+### 2.0 File Upload Module (`/upload`) *(Authenticated)*
+
+#### `POST /upload`
+* **Headers**: `Authorization: Bearer <JWT>`, `Content-Type: multipart/form-data`
+* **Form Field**: `file` (File Binary - Max 5MB, JPG/PNG/WEBP/GIF)
+* **Response `201 Created`**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "url": "http://localhost:4000/uploads/image-1770560000000-123456789.png",
+      "filename": "image-1770560000000-123456789.png",
+      "originalName": "banner.png",
+      "mimeType": "image/png",
+      "size": 102400
+    }
+  }
+  ```
+
+---
 
 ### 2.1 Authentication Module (`/auth`)
 

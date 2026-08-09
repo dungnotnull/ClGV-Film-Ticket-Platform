@@ -12,11 +12,11 @@ export class ShowtimeService {
     const startTime = new Date(createShowtimeDto.startTime);
     const endTime = new Date(createShowtimeDto.endTime);
 
-    // Thêm 15 phút dọn dẹp vệ sinh phòng chiếu
-    const bufferedStartTime = new Date(startTime.getTime() - 15 * 60 * 1000);
-    const bufferedEndTime = new Date(endTime.getTime() + 15 * 60 * 1000);
+    // Thêm 30 phút khoảng nghỉ và dọn dẹp vệ sinh giữa các suất chiếu trong cùng phòng
+    const bufferedStartTime = new Date(startTime.getTime() - 30 * 60 * 1000);
+    const bufferedEndTime = new Date(endTime.getTime() + 30 * 60 * 1000);
 
-    // Kiểm tra xung đột lịch chiếu trong phòng
+    // Kiểm tra xung đột lịch chiếu trong cùng phòng chiếu
     const conflictingShowtimes = await this.prisma.showtime.findMany({
       where: {
         hallId: createShowtimeDto.hallId,
@@ -32,7 +32,7 @@ export class ShowtimeService {
     if (conflictingShowtimes.length > 0) {
       throw new ConflictException({
         code: 'SHOWTIME_CONFLICT',
-        message: 'Suất chiếu bị trùng lặp thời gian hoặc vi phạm khoảng nghỉ 15 phút dọn phòng chiếu',
+        message: 'Suất chiếu bị trùng lặp thời gian hoặc vi phạm khoảng nghỉ 30 phút dọn phòng chiếu',
       });
     }
 

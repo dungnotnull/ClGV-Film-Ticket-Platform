@@ -44,7 +44,7 @@
 
 - [x] **Cinema Clusters & Special Experience Rooms (`src/modules/cinema`):**
   - [x] Định nghĩa schema `Cinema`, `Hall`, `FormatType` (`2D`, `3D`, `IMAX`, `4DX`, `SCREENX`, `GOLD_CLASS`, `LAMOUR_BED`).
-  - [x] `POST /api/v1/cinemas`: API tạo mới cụm rạp CGV (gắn với `cityId`, tên cụm rạp, địa chỉ, GPS location, hotline, tiện ích rạp như Parking, Popcorn Bar, L'Amour).
+  - [x] `POST /api/v1/cinemas`: API tạo mới cụm rạp CGV (ngăn chặn trùng tên rạp, gắn với `cityId`, địa chỉ, hotline, tiện ích rạp).
   - [x] `GET /api/v1/cinemas`: API lấy danh sách cụm rạp (hỗ trợ filter động theo `cityId`, `format`, `amenities`, pagination).
   - [x] `GET /api/v1/cinemas/:id`: API lấy chi tiết cụm rạp và các tiện ích.
   - [x] `PUT /api/v1/cinemas/:id`: API cập nhật thông tin cụm rạp.
@@ -52,12 +52,18 @@
 
 - [x] **Halls & Dynamic CGV Room Matrix Builder (`src/modules/cinema`):**
   - [x] Xây dựng data structure ma trận ghế JSON (`SeatNode`, `RoomMatrix`: dimensions, aisles, grid của các loại ghế: Standard, VIP, Sweetbox/Couple, GoldClass/L'Amour Bed).
-  - [x] `POST /api/v1/halls`: API tạo phòng chiếu mới cho cụm rạp.
+  - [x] `POST /api/v1/halls`: API tạo phòng chiếu mới cho cụm rạp (ngăn chặn trùng tên phòng chiếu trong cùng 1 rạp).
   - [x] `GET /api/v1/halls`: API lấy danh sách phòng chiếu theo cinema ID.
   - [x] `GET /api/v1/halls/:id`: API chi tiết phòng chiếu.
   - [x] `PUT /api/v1/halls/:id/matrix`: API cấu hình ma trận sơ đồ ghế (Hàng A-Z, Cột 1-N, Aisle gaps, loại ghế, priceModifier, isBlocked).
   - [x] `GET /api/v1/halls/:id/matrix`: API lấy sơ đồ ma trận ghế phòng chiếu.
   - [x] `DELETE /api/v1/halls/:id`: API xóa phòng chiếu.
+
+- [x] **File Upload Module (`src/modules/upload`):**
+  - [x] `POST /api/v1/upload`: API upload file ảnh trực tiếp (phục vụ ảnh Phim, Banner) lưu đĩa cứng và trả về static URL.
+
+- [x] **Showtime Conflict Engine & 30-Minute Buffer (`src/modules/showtime`):**
+  - [x] Tự động kiểm tra khoảng nghỉ 30 phút giữa các suất chiếu trong cùng phòng chiếu (`SHOWTIME_CONFLICT`).
 
 - [x] **Admin Promotional Banners & CMS (`src/modules/banner`):**
   - [x] Định nghĩa schema `Banner` (tiêu đề, hình ảnh, link liên kết, thứ tự hiển thị, status `ACTIVE`/`INACTIVE`).
