@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Param, Put, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { CinemaService } from './cinema.service';
 import { CreateCinemaDto } from './dto/create-cinema.dto';
+import { UpdateCinemaDto } from './dto/update-cinema.dto';
 import { CreateHallDto } from './dto/create-hall.dto';
 import { UpdateMatrixDto } from './dto/update-matrix.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -36,6 +37,24 @@ export class CinemaController {
     return this.cinemaService.createCinema(createCinemaDto);
   }
 
+  @ApiOperation({ summary: 'Admin cập nhật thông tin cụm rạp' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Put('cinemas/:id')
+  async updateCinema(@Param('id') id: string, @Body() updateCinemaDto: UpdateCinemaDto) {
+    return this.cinemaService.updateCinema(id, updateCinemaDto);
+  }
+
+  @ApiOperation({ summary: 'Admin xóa cụm rạp' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete('cinemas/:id')
+  async deleteCinema(@Param('id') id: string) {
+    return this.cinemaService.deleteCinema(id);
+  }
+
   @ApiOperation({ summary: 'Admin tạo mới phòng chiếu' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -43,6 +62,15 @@ export class CinemaController {
   @Post('halls')
   async createHall(@Body() createHallDto: CreateHallDto) {
     return this.cinemaService.createHall(createHallDto);
+  }
+
+  @ApiOperation({ summary: 'Admin xóa phòng chiếu' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete('halls/:id')
+  async deleteHall(@Param('id') id: string) {
+    return this.cinemaService.deleteHall(id);
   }
 
   @ApiOperation({ summary: 'Lấy sơ đồ ma trận ghế của phòng chiếu' })
@@ -60,3 +88,4 @@ export class CinemaController {
     return this.cinemaService.updateHallMatrix(id, updateMatrixDto);
   }
 }
+

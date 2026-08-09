@@ -18,12 +18,12 @@ Mọi thay đổi trong mã nguồn phải đi qua lăng kính của 3 nguyên l
 
 Không bỏ qua bất kỳ bước nào dưới đây. Đi sai hướng thì dừng lại chỉnh kế hoạch, đừng cố làm tiếp để sinh ra nợ kỹ thuật.
 
-1. **Lập kế hoạch vào todo.md**: Viết dàn ý và mục tiêu cụ thể, có thể đo lường được trước khi code. Chia nhỏ bài toán lớn để quản lý tốt giới hạn ngữ cảnh (context) của AI.
-2. **Kiểm tra lại kế hoạch**: Đảm bảo luồng xử lý hợp lý và bám sát kiến trúc hệ thống.
-3. **Thực thi và Đánh dấu**: Làm xong mục nào trong `todo.md`, đánh dấu (`[x]`) mục đó. Tập trung xử lý dứt điểm từng phần.
+1. **Lập kế hoạch công việc**: Phân tích yêu cầu, xác định mục tiêu và chia nhỏ bài toán lớn trước khi viết code để quản lý tốt ngữ cảnh (context).
+2. **Kiểm tra lại kế hoạch**: Đảm bảo luồng xử lý hợp lý, bám sát hợp đồng [API-CONTRACT.md](../API-CONTRACT.md) và kiến trúc hệ thống.
+3. **Thực thi và Đánh dấu**: Thực thi mã nguồn dứt điểm từng phần, cập nhật trạng thái vào file [DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md](./DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md).
 4. **Giải thích thay đổi**: Mỗi dòng code viết ra, mỗi cấu trúc bị thay đổi đều phải có giải thích rõ ràng (thông qua comment Tiếng Việt hoặc commit log).
-5. **Ghi nhận kết quả vào todo.md**: Cập nhật trạng thái hoàn thành kèm bằng chứng. Chỉ được coi là "Xong" khi có bằng chứng rõ ràng (test pass, log sạch, thay đổi hợp lý).
-6. **Tổng kết bài học vào lessons.md**: Sai ở đâu? Vì sao sai? Lần sau tránh thế nào? Kinh nghiệm không ghi lại sẽ bị quên.
+5. **Ghi nhận kết quả vào DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md**: Cập nhật trạng thái hoàn thành (`[x]`) kèm bằng chứng. Chỉ được coi là "Xong" khi có bằng chứng rõ ràng (compile/test pass, log sạch, thay đổi hợp lý).
+6. **Tổng kết bài học & Theo dõi sự cố**: Ghi nhận nguyên nhân lỗi và phương án xử lý vào [ISSUES-LIST-TRACKING.md](./ISSUES-LIST-TRACKING.md) hoặc [CHANGELOG.md](../CHANGELOG.md).
 
 ---
 
@@ -115,4 +115,4 @@ Code chạy trong đầu chưa đủ. Nếu người khó tính nhất trong tea
 3. **Cập nhật Hệ thống Tracking Logs**:
    * Đánh dấu `[x]` vào file [DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md](./DEVELOPMENT-TASK-BY-PHASES-TRACKING-LOGS.md).
    * Ghi chú các thay đổi lớn vào [CHANGELOG.md](../CHANGELOG.md).
-4. **Đóng gói Bài học**: Hoàn tất bước 6 trong quy trình (ghi log lỗi và cách khắc phục vào `lessons.md`).
+4. **Đóng gói Bài học & Sự cố**: Hoàn tất ghi log lỗi và phương án xử lý vào [ISSUES-LIST-TRACKING.md](./ISSUES-LIST-TRACKING.md) hoặc [CHANGELOG.md](../CHANGELOG.md).
