@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminMoviesPage() {
@@ -34,6 +34,10 @@ export default function AdminMoviesPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<any>(null);
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('ALL');
 
   const [formData, setFormData] = useState({
     title: '',
@@ -187,6 +191,29 @@ export default function AdminMoviesPage() {
         </Button>
       </div>
 
+      <div className="flex gap-4 items-center bg-card p-4 rounded-lg border border-border/50">
+        <div className="flex-1 relative">
+          <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+          <Input 
+            className="pl-9" 
+            placeholder="Tìm theo tên phim hoặc đạo diễn..." 
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="w-48">
+          <select 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+            value={filterStatus}
+            onChange={e => setFilterStatus(e.target.value)}
+          >
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="NOW_SHOWING">Đang chiếu</option>
+            <option value="COMING_SOON">Sắp chiếu</option>
+          </select>
+        </div>
+      </div>
+
       <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-lg overflow-hidden shadow-2xl">
         <Table>
           <TableHeader>
@@ -208,8 +235,23 @@ export default function AdminMoviesPage() {
                   Đang tải dữ liệu...
                 </TableCell>
               </TableRow>
-            ) : movies.length > 0 ? (
-              movies.map((movie: any, index: number) => (
+            ) : (() => {
+              const filtered = movies.filter((movie: any) => {
+                const matchSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                    (movie.director || '').toLowerCase().includes(searchTerm.toLowerCase());
+                const matchStatus = filterStatus === 'ALL' || movie.status === filterStatus;
+                return matchSearch && matchStatus;
+              });
+
+              if (filtered.length === 0) {
+                return (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">Không có phim nào phù hợp</TableCell>
+                  </TableRow>
+                );
+              }
+
+              return filtered.map((movie: any, index: number) => (
                 <TableRow key={movie.id}>
                   <TableCell className="font-medium text-xs text-center">{index + 1}</TableCell>
                   <TableCell className="font-bold">{movie.title}</TableCell>
@@ -235,14 +277,8 @@ export default function AdminMoviesPage() {
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
-                  Không có dữ liệu
-                </TableCell>
-              </TableRow>
-            )}
+              ));
+            })()}
           </TableBody>
         </Table>
       </div>
@@ -302,6 +338,36 @@ export default function AdminMoviesPage() {
 
 // Extracted form fields component to avoid duplication
 function MovieFormFields({ formData, setFormData }: { formData: any, setFormData: any }) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await api.post('/upload', uploadData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (res.success) {
+        setFormData((prev: any) => ({ ...prev, posterUrl: res.data.url }));
+        toast.success('Tải ảnh lên thành công');
+      } else {
+        toast.error('Lỗi khi tải ảnh lên');
+      }
+    } catch (error) {
+      console.error('Upload failed', error);
+      toast.error('Lỗi kết nối Server');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="grid gap-4 py-4">
       <div className="grid grid-cols-2 gap-4">
@@ -352,8 +418,22 @@ function MovieFormFields({ formData, setFormData }: { formData: any, setFormData
         </div>
       </div>
       <div className="space-y-2">
-        <Label>Link Poster</Label>
-        <Input value={formData.posterUrl} onChange={e => setFormData({...formData, posterUrl: e.target.value})} placeholder="https://..." />
+        <Label>Ảnh Poster</Label>
+        <div className="flex flex-col gap-3">
+          {formData.posterUrl && (
+            <img src={formData.posterUrl} alt="Poster preview" className="w-32 h-48 object-cover rounded-md border border-border" />
+          )}
+          <div className="flex gap-2 items-center">
+            <Input 
+              type="file" 
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleImageUpload}
+              disabled={uploading}
+              className="flex-1 cursor-pointer"
+            />
+            {uploading && <span className="text-sm text-muted-foreground animate-pulse">Đang tải...</span>}
+          </div>
+        </div>
       </div>
       <div className="space-y-2">
         <Label>Link Trailer (Youtube)</Label>

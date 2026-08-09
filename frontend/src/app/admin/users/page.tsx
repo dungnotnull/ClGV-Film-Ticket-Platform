@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Users, Search, ShieldAlert, CreditCard, Trash2, Edit } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default function AdminUsersPage() {
@@ -18,6 +18,8 @@ export default function AdminUsersPage() {
   // Modals state
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isMembershipDialogOpen, setIsMembershipDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<any>(null);
   
   // Selected user
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -92,11 +94,18 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa tài khoản này? Hành động này không thể hoàn tác!')) return;
+  const handleDelete = (user: any) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
     try {
-      await api.delete(`/admin/users/${id}`);
+      await api.delete(`/admin/users/${userToDelete.id}`);
       toast.success('Xóa người dùng thành công');
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
       fetchUsers();
     } catch (error: any) {
       toast.error('Có lỗi xảy ra khi xóa');
@@ -192,7 +201,7 @@ export default function AdminUsersPage() {
                       <Button variant="outline" size="sm" onClick={() => handleOpenMembershipDialog(user)} title="Chỉnh sửa thẻ/điểm">
                         <CreditCard className="w-4 h-4" />
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)} title="Xóa người dùng">
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(user)} title="Xóa người dùng">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </TableCell>
@@ -295,6 +304,20 @@ export default function AdminUsersPage() {
               <Button type="submit">Lưu thông tin thẻ</Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Xác nhận xóa tài khoản</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn xóa người dùng <strong>{userToDelete?.fullName || userToDelete?.email}</strong>? Hành động này không thể hoàn tác!
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Hủy</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Xóa</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

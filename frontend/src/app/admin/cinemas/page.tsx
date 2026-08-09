@@ -99,11 +99,21 @@ export default function AdminCinemasPage() {
         });
         fetchCinemas();
       } else {
-        toast.error('Có lỗi xảy ra');
+        if (res.error?.code === 'DUPLICATE_CINEMA_NAME') {
+          setIsAddOpen(false);
+          toast.error('Lỗi: Tên rạp đã tồn tại trong hệ thống!');
+        } else {
+          toast.error('Có lỗi xảy ra');
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to add cinema', error);
-      toast.error('Lỗi kết nối Server');
+      if (error.response?.data?.error?.code === 'DUPLICATE_CINEMA_NAME') {
+        setIsAddOpen(false);
+        toast.error('Lỗi: Tên rạp đã tồn tại trong hệ thống!');
+      } else {
+        toast.error('Lỗi kết nối Server');
+      }
     }
   };
 
@@ -126,11 +136,21 @@ export default function AdminCinemasPage() {
           halls: [...(prev.halls || []), res.data]
         }));
       } else {
-        toast.error('Có lỗi xảy ra');
+        if (res.error?.code === 'DUPLICATE_HALL_NAME') {
+          setIsAddHallOpen(false);
+          toast.error('Lỗi: Tên phòng chiếu đã tồn tại trong rạp này!');
+        } else {
+          toast.error('Có lỗi xảy ra');
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to add hall', error);
-      toast.error('Lỗi kết nối Server');
+      if (error.response?.data?.error?.code === 'DUPLICATE_HALL_NAME') {
+        setIsAddHallOpen(false);
+        toast.error('Lỗi: Tên phòng chiếu đã tồn tại trong rạp này!');
+      } else {
+        toast.error('Lỗi kết nối Server');
+      }
     }
   };
 

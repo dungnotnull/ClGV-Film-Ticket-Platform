@@ -14,6 +14,7 @@ export default function AdminBannersPage() {
   const [banners, setBanners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -72,8 +73,36 @@ export default function AdminBannersPage() {
         fetchBanners();
       }
     } catch (error) {
-      console.error('Failed to delete banner', error);
+      console.error('Failed to toggle status', error);
       toast.error('Lỗi kết nối Server');
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await api.post('/upload', uploadData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (res.success) {
+        setFormData(prev => ({ ...prev, imageUrl: res.data.url }));
+        toast.success('Tải ảnh lên thành công');
+      } else {
+        toast.error('Lỗi khi tải ảnh lên');
+      }
+    } catch (error) {
+      console.error('Upload failed', error);
+      toast.error('Lỗi kết nối Server');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -99,10 +128,21 @@ export default function AdminBannersPage() {
                 <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="VD: Mừng lễ 2/9, Vé chỉ 45k..." />
               </div>
               <div className="space-y-2">
-                <Label>URL Ảnh (Image URL)</Label>
-                <div className="flex gap-2">
-                  <ImageIcon className="w-5 h-5 text-muted-foreground self-center" />
-                  <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://..." className="flex-1" />
+                <Label>Ảnh Banner</Label>
+                <div className="flex flex-col gap-3">
+                  {formData.imageUrl && (
+                    <img src={formData.imageUrl} alt="Banner preview" className="w-full h-32 object-cover rounded-md border border-border" />
+                  )}
+                  <div className="flex gap-2 items-center">
+                    <Input 
+                      type="file" 
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                      className="flex-1 cursor-pointer"
+                    />
+                    {uploading && <span className="text-sm text-muted-foreground animate-pulse">Đang tải...</span>}
+                  </div>
                 </div>
               </div>
               <div className="space-y-2">

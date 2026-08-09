@@ -145,13 +145,28 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
                         <div key={cinemaName} className="mb-4 last:mb-0">
                           <h5 className="font-semibold text-sm mb-2 text-white">{cinemaName}</h5>
                           <div className="flex flex-wrap gap-2">
-                            {stList.map((st: any) => (
-                              <Link key={st.id} href={`/booking/seats?showtimeId=${st.id}`}>
-                                <Button variant="outline" className="border-primary/50 hover:bg-primary hover:text-white transition-colors">
-                                  {new Date(st.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                                </Button>
-                              </Link>
-                            ))}
+                            {stList.map((st: any) => {
+                              const isPast = new Date(st.startTime).getTime() < new Date().getTime();
+                              return (
+                                <Link 
+                                  key={st.id} 
+                                  href={isPast ? '#' : `/booking/seats?showtimeId=${st.id}`}
+                                  className={isPast ? 'pointer-events-none' : ''}
+                                >
+                                  <Button 
+                                    variant="outline" 
+                                    className={`border-primary/50 transition-colors ${
+                                      isPast 
+                                        ? 'opacity-50 cursor-not-allowed bg-black text-gray-500 border-gray-800' 
+                                        : 'hover:bg-primary hover:text-white'
+                                    }`}
+                                    disabled={isPast}
+                                  >
+                                    {new Date(st.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                  </Button>
+                                </Link>
+                              );
+                            })}
                           </div>
                         </div>
                       ));

@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Calendar, Clock, Film } from 'lucide-react';
+import { Plus, Calendar, Clock, Film, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminShowtimesPage() {
@@ -17,6 +17,10 @@ export default function AdminShowtimesPage() {
   const [selectedCinemaHalls, setSelectedCinemaHalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDate, setFilterDate] = useState('');
 
   const [formData, setFormData] = useState({
     movieId: '',
@@ -71,10 +75,27 @@ export default function AdminShowtimesPage() {
       const movie = movies.find(m => m.id === formData.movieId);
       const duration = movie?.durationMinutes || 120;
       
-      // Tạo Date theo giờ địa phương bằng cách KHÔNG gắn thêm 'Z' (UTC)
       const startDateTime = new Date(`${formData.date}T${formData.startTime}:00`);
       
       const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
+
+      // Client-side validation for 30-minute cleaning buffer
+      const hallShowtimes = showtimes.filter(st => st.hallId === formData.hallId);
+      const newStart = startDateTime.getTime();
+      const newEnd = endDateTime.getTime();
+      const cleaningTime = 30 * 60000; // 30 mins
+
+      for (const st of hallShowtimes) {
+        const existingStart = new Date(st.startTime).getTime();
+        const existingEnd = new Date(st.endTime).getTime();
+        
+        // Overlap condition: new starts before existing ends + 30m AND new ends + 30m > existing starts
+        if (newStart < existingEnd + cleaningTime && newEnd + cleaningTime > existingStart) {
+           setIsAddOpen(false);
+           toast.error('Lỗi: Khoảng cách giữa các suất chiếu cùng phòng phải cách nhau ít nhất 30 phút để dọn dẹp!');
+           return;
+        }
+      }
 
       const payload = {
         movieId: formData.movieId,
@@ -92,6 +113,7 @@ export default function AdminShowtimesPage() {
         fetchData();
       } else {
         if (res.error?.code === 'SHOWTIME_CONFLICT') {
+          setIsAddOpen(false);
           toast.error('Xung đột lịch chiếu! Phòng chiếu này đã có phim khác trong khung giờ này.');
         } else {
           toast.error('Có lỗi xảy ra');
@@ -99,7 +121,8 @@ export default function AdminShowtimesPage() {
       }
     } catch (error: any) {
       if (error.response?.data?.error?.code === 'SHOWTIME_CONFLICT') {
-        toast.error('Xung đột lịch chiếu (Thời gian dọn dẹp 15 phút chưa đạt).');
+        setIsAddOpen(false);
+        toast.error('Lỗi: Khoảng cách giữa các suất chiếu cùng phòng phải cách nhau ít nhất 30 phút để dọn dẹp!');
       } else {
         toast.error('Lỗi kết nối Server');
       }
@@ -178,6 +201,29 @@ export default function AdminShowtimesPage() {
         </Dialog>
       </div>
 
+      <div className="flex gap-4 items-center bg-card p-4 rounded-lg border border-border/50">
+        <div className="flex-1 relative">
+          <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+          <Input 
+            className="pl-9" 
+            placeholder="Tìm theo tên phim hoặc rạp..." 
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="w-48">
+          <Input 
+            type="date" 
+            value={filterDate}
+            onChange={e => setFilterDate(e.target.value)}
+            title="Lọc theo ngày"
+          />
+        </div>
+        {(searchTerm || filterDate) && (
+          <Button variant="ghost" onClick={() => { setSearchTerm(''); setFilterDate(''); }}>Xóa lọc</Button>
+        )}
+      </div>
+
       <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-lg overflow-hidden shadow-2xl">
         <Table>
           <TableHeader>
@@ -194,8 +240,23 @@ export default function AdminShowtimesPage() {
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-10">Đang tải...</TableCell>
               </TableRow>
-            ) : showtimes.length > 0 ? (
-              showtimes.map((st: any) => (
+            ) : (() => {
+              const filtered = showtimes.filter(st => {
+                const matchSearch = (st.movie?.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                    (st.cinema?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+                const matchDate = filterDate ? st.startTime.startsWith(filterDate) : true;
+                return matchSearch && matchDate;
+              });
+
+              if (filtered.length === 0) {
+                return (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">Không có suất chiếu nào phù hợp</TableCell>
+                  </TableRow>
+                );
+              }
+
+              return filtered.map((st: any) => (
                 <TableRow key={st.id}>
                   <TableCell className="font-bold flex items-center gap-2">
                     <Film className="w-4 h-4 text-primary" /> {st.movie?.title || 'Unknown'}
@@ -205,19 +266,15 @@ export default function AdminShowtimesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(st.startTime).toLocaleDateString('vi-VN')}</div>
-                    <div className="flex items-center gap-1 text-primary text-xs font-bold mt-1"><Clock className="w-3 h-3" /> {new Date(st.startTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</div>
+                    <div className="flex items-center gap-1 text-primary text-xs font-bold mt-1"><Clock className="w-3 h-3" /> {new Date(st.startTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit', hour12: false})}</div>
                   </TableCell>
                   <TableCell>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(st.basePrice)}</TableCell>
                   <TableCell>
                     <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-500">Mở bán</span>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">Chưa có lịch chiếu nào</TableCell>
-              </TableRow>
-            )}
+              ));
+            })()}
           </TableBody>
         </Table>
       </div>

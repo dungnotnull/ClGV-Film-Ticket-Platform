@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Building2, Plus, Edit, Trash2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 export default function AdminCitiesPage() {
   const [cities, setCities] = useState<any[]>([]);
@@ -17,6 +17,9 @@ export default function AdminCitiesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({ id: '', name: '', code: '', displayOrder: 0 });
   const [isEditing, setIsEditing] = useState(false);
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [cityToDelete, setCityToDelete] = useState<any>(null);
 
   useEffect(() => {
     fetchCities();
@@ -46,6 +49,18 @@ export default function AdminCitiesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.displayOrder > 0) {
+      const isDuplicate = cities.some(city => 
+        city.displayOrder === Number(formData.displayOrder) && 
+        city.id !== formData.id
+      );
+      if (isDuplicate) {
+        toast.error('Thứ tự hiển thị này đã tồn tại. Vui lòng chọn số khác!');
+        return;
+      }
+    }
+
     try {
       const payload = {
         name: formData.name,
@@ -67,11 +82,18 @@ export default function AdminCitiesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa thành phố này?')) return;
+  const handleDelete = (city: any) => {
+    setCityToDelete(city);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!cityToDelete) return;
     try {
-      await api.delete(`/admin/cities/${id}`);
+      await api.delete(`/admin/cities/${cityToDelete.id}`);
       toast.success('Xóa thành phố thành công');
+      setIsDeleteDialogOpen(false);
+      setCityToDelete(null);
       fetchCities();
     } catch (error: any) {
       toast.error('Có lỗi xảy ra khi xóa');
@@ -105,7 +127,7 @@ export default function AdminCitiesPage() {
                 <Button variant="outline" size="sm" onClick={() => handleOpenDialog(city)}>
                   <Edit className="w-4 h-4" />
                 </Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(city.id)}>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(city)}>
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
@@ -136,6 +158,20 @@ export default function AdminCitiesPage() {
               <Button type="submit">{isEditing ? 'Cập nhật' : 'Thêm mới'}</Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Xác nhận xóa thành phố</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn xóa thành phố <strong>{cityToDelete?.name}</strong>? Hành động này không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Hủy</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Xóa</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -128,3 +128,7 @@
     @apply font-sans;
   }
 }
+.toaster, [data-sonner-toaster], [data-sonner-toast] {
+  z-index: 999999 !important;
+}
+
