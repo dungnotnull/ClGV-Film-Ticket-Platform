@@ -424,19 +424,84 @@ Base URL: `http://localhost:4000/api/v1`
 
 ### 2.6 CGV Vouchers & Coupons Module (`/vouchers`, `/admin/vouchers`)
 
+#### `GET /admin/vouchers` *(Admin Only)*
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Query Params**: `search` (string), `status` (`ACTIVE` | `INACTIVE`), `page` (number), `limit` (number)
+* **Response `200 OK`**: Paginated list of vouchers with usage stats.
+
+#### `GET /admin/vouchers/:id` *(Admin Only)*
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Response `200 OK`**: Detailed voucher object with stats (`totalClaimed`, `totalUsed`, `totalBookingsApplied`).
+
 #### `POST /admin/vouchers` *(Admin Only)*
 * **Headers**: `Authorization: Bearer <JWT>`
-* **Request Payload**: `{ "code": "CGV50K", "title": "Giảm 50K", "discountType": "FIXED_AMOUNT", "discountValue": 50000, "minOrderValue": 200000, "expiresAt": "2026-12-31T23:59:59.000Z" }`
+* **Request Payload**:
+  ```json
+  {
+    "code": "CGV50K",
+    "title": "Giảm 50K cho đơn từ 200K",
+    "discountType": "FIXED_AMOUNT",
+    "discountValue": 50000,
+    "minOrderValue": 200000,
+    "maxDiscountAmount": 100000,
+    "status": "ACTIVE",
+    "expiresAt": "2026-12-31T23:59:59.000Z"
+  }
+  ```
 
-#### `GET /vouchers/wallet`
+#### `PUT /admin/vouchers/:id` *(Admin Only)*
 * **Headers**: `Authorization: Bearer <JWT>`
-* **Response `200 OK`**: User's stored active vouchers.
+* **Request Payload**: Partial object of `CreateVoucherDto`.
+* **Response `200 OK`**: Updated voucher object.
 
-#### `POST /vouchers/claim`
+#### `DELETE /admin/vouchers/:id` *(Admin Only)*
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Response `200 OK`**: Deleted voucher or soft-deactivated (INACTIVE if used in bookings).
+
+#### `POST /admin/vouchers/assign` *(Admin Only)*
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Request Payload**:
+  ```json
+  {
+    "voucherId": "vch_uuid_123",
+    "userIds": ["usr_uuid_1", "usr_uuid_2"]
+  }
+  ```
+* **Response `200 OK`**: `{ "message": "Phát tặng thành công cho 2 người dùng", "count": 2 }`
+
+#### `GET /vouchers/available` *(Public / Customer)*
+* **Response `200 OK`**: Array of active & non-expired public vouchers, with `isClaimed` flag.
+
+#### `GET /vouchers/wallet` *(Customer)*
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Query Params**: `status` (`UNUSED` | `USED` | `EXPIRED`)
+* **Response `200 OK`**: Array of user's stored vouchers with `walletStatus`.
+
+#### `POST /vouchers/claim` *(Customer)*
 * **Headers**: `Authorization: Bearer <JWT>`
 * **Request Payload**: `{ "code": "CGV50K" }`
+* **Response `200 OK`**: UserVoucher object added to wallet.
+
+#### `POST /vouchers/apply` *(Customer)*
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Request Payload**: `{ "code": "CGV50K", "orderAmount": 250000 }`
+* **Response `200 OK`**:
+  ```json
+  {
+    "valid": true,
+    "voucherId": "vch_uuid_123",
+    "code": "CGV50K",
+    "title": "Giảm 50K",
+    "discountType": "FIXED_AMOUNT",
+    "discountValue": 50000,
+    "discountAmount": 50000,
+    "orderAmount": 250000,
+    "finalAmount": 200000
+  }
+  ```
 
 ---
+
 
 ### 2.7 CGV E-Wallet & Member Card (`/cgv-card`)
 
@@ -525,6 +590,50 @@ Gateway URL: `ws://localhost:4000/socket.io`
 
 ---
 
+### 2.9 VietQR Payment Gateway (Phase 6 Dev) (`/payments/vietqr`)
+
+#### `POST /payments/vietqr/create-url`
+* **Headers**: `Authorization: Bearer <JWT>`
+* **Request Payload**:
+  ```json
+  {
+    "bookingId": "bk_99812",
+    "amount": 250000,
+    "orderInfo": "Thanh toan ve xem phim"
+  }
+  ```
+* **Response `200 OK`**:
+  ```json
+  {
+    "paymentMethod": "VIETQR",
+    "paymentUrl": "https://img.vietqr.io/image/970423-1234567890-compact2.png?amount=250000&addInfo=CLGV_bk_99812&accountName=CLGV%20FILM%20TICKET%20PLATFORM",
+    "vietQrImageUrl": "https://img.vietqr.io/image/970423-1234567890-compact2.png?amount=250000&addInfo=CLGV_bk_99812&accountName=CLGV%20FILM%20TICKET%20PLATFORM",
+    "qrPayload": "00020101021238570010A00000072701270006970423...",
+    "qrDataUrl": "data:image/png;base64,...",
+    "bankInfo": {
+      "bankName": "TPBank",
+      "bin": "970423",
+      "accountNo": "1234567890",
+      "accountName": "CLGV FILM TICKET PLATFORM",
+      "amount": 250000,
+      "addInfo": "CLGV_bk_99812"
+    }
+  }
+  ```
+
+#### `POST /payments/vietqr/callback`
+* **Headers**: `Content-Type: application/json`
+* **Request Payload**:
+  ```json
+  {
+    "bookingId": "bk_99812",
+    "status": "SUCCESS"
+  }
+  ```
+* **Response `200 OK`**: `{ "success": true, "message": "Xác nhận thanh toán VietQR thành công", "data": { ... } }`
+
+---
+
 ### 3.2 Server -> Client Events
 
 #### `seat:state_changed`
@@ -540,3 +649,4 @@ Gateway URL: `ws://localhost:4000/socket.io`
   }
   ```
   *(Status options: `AVAILABLE`, `HOLDING`, `RESERVED`, `SOLD`, `BLOCKED`)*
+

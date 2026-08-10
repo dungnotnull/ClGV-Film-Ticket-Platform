@@ -5,14 +5,40 @@ All notable changes to the **ClGV Film Ticket Platform** project will be documen
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-08-10
+
+### Added
+- **Phase 6 VietQR Payment Gateway (`src/modules/payment`)**:
+  - `POST /api/v1/payments/vietqr/create-url`: Khởi tạo mã VietQR Napas247 (Dev Environment) kèm `bankInfo`, payload QR tiêu chuẩn và URL hình ảnh VietQR.
+  - `POST /api/v1/payments/vietqr/callback`: Xử lý IPN / Callback xác nhận thanh toán thành công qua VietQR, chuyển ghế `SOLD` và broadcast Socket real-time.
+- **Tự động hóa Trạng thái Phim & Validation (`src/modules/movie`)**:
+  - Tự động chuyển đổi `COMING_SOON` -> `NOW_SHOWING` dựa trên ngày phát hành `releaseDate`.
+  - Mặc định trạng thái phim mới tạo là `COMING_SOON`.
+  - Validation chặn chọn `releaseDate` trong quá khứ (`BadRequestException`).
+- **Giá ghế linh hoạt theo loại ghế (`src/modules/showtime`)**:
+  - Tính toán giá vé linh hoạt dựa theo hệ số loại ghế (`STANDARD: 1.0`, `VIP: 1.2`, `COUPLE: 2.0`).
+- **Sửa bug đặt lại ghế & Giải phóng Redis (`src/modules/booking`)**:
+  - Kiểm tra DB PostgreSQL trước khi giữ ghế, chặn chọn lại ghế đã `SOLD` hoặc `BLOCKED`.
+  - Tối ưu API `POST /api/v1/bookings/release-seat` xóa lock Redis và broadcast Socket `seat:state_changed` (`AVAILABLE`) khi khách hàng hủy checkout.
+
 ---
 
-## [Unreleased]
+## [0.5.0] - 2026-08-10
 
-### Planned
-- Complete Phase 1 Database migrations (Prisma/TypeORM) for Users, Cinemas, Halls, Movies, Showtimes, Seats, Bookings, Tickets.
-- Implement Authentication Module (JWT Access + Refresh tokens, OAuth 2.0).
-- Construct Socket.io WebSocket server & Redis Pub/Sub integration.
+### Added
+- **Full Voucher & Promo Code Management Module (`src/modules/voucher`)**:
+  - `GET /api/v1/admin/vouchers`: API Admin lấy danh sách tất cả voucher (hỗ trợ phân trang, tìm kiếm code/title, lọc trạng thái ACTIVE/INACTIVE).
+  - `GET /api/v1/admin/vouchers/:id`: API Admin xem chi tiết voucher kèm số liệu tổng quan (số lượt lưu ví, số lượt đã sử dụng, số đơn hàng đã áp dụng).
+  - `POST /api/v1/admin/vouchers`: API Admin tạo mới voucher (bổ sung `maxDiscountAmount` và `status`).
+  - `PUT /api/v1/admin/vouchers/:id`: API Admin cập nhật thông tin voucher.
+  - `DELETE /api/v1/admin/vouchers/:id`: API Admin xóa voucher (tự động chuyển sang `INACTIVE` nếu voucher đã từng phát sinh đơn hàng).
+  - `POST /api/v1/admin/vouchers/assign`: API Admin phát tặng trực tiếp voucher vào ví cho danh sách người dùng.
+  - `GET /api/v1/vouchers/available`: API Khách hàng lấy danh sách voucher công khai đang phát hành (kèm cờ `isClaimed`).
+  - `GET /api/v1/vouchers/wallet`: API Khách hàng xem ví voucher cá nhân (lọc theo trạng thái `UNUSED`, `USED`, `EXPIRED`).
+  - `POST /api/v1/vouchers/claim`: API Khách hàng lưu voucher vào ví.
+  - `POST /api/v1/vouchers/apply`: API Khách hàng xem trước & thẩm định giá trị giảm giá VND của voucher cho đơn hàng.
+
+---
 
 ## [0.4.0] - 2026-08-06
 

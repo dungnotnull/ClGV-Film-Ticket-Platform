@@ -29,6 +29,13 @@ let ShowtimeService = class ShowtimeService {
     async create(createShowtimeDto) {
         const startTime = new Date(createShowtimeDto.startTime);
         const endTime = new Date(createShowtimeDto.endTime);
+        const now = new Date();
+        if (startTime < now) {
+            throw new common_1.BadRequestException('Thời gian bắt đầu suất chiếu không được ở trong quá khứ');
+        }
+        if (endTime <= startTime) {
+            throw new common_1.BadRequestException('Thời gian kết thúc phải sau thời gian bắt đầu suất chiếu');
+        }
         const bufferedStartTime = new Date(startTime.getTime() - 30 * 60 * 1000);
         const bufferedEndTime = new Date(endTime.getTime() + 30 * 60 * 1000);
         const conflictingShowtimes = await this.prisma.showtime.findMany({

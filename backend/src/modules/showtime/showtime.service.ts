@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { CreateShowtimeDto } from './dto/create-showtime.dto';
@@ -26,16 +26,26 @@ export class ShowtimeService {
     private readonly redisService: RedisService,
   ) {}
 
-  // Admin tạo suất chiếu mới kèm kiểm tra trùng lặp lịch (Conflict Detection Engine)
+  // Admin tạo suất chiếu mới kèm kiểm tra trùng lặp lịch (Conflict Detection Engine) và validation thời gian
   async create(createShowtimeDto: CreateShowtimeDto) {
     const startTime = new Date(createShowtimeDto.startTime);
     const endTime = new Date(createShowtimeDto.endTime);
+    const now = new Date();
 
-    // Thêm 30 phút khoảng nghỉ và dọn dẹp vệ sinh giữa các suất chiếu trong cùng phòng
+    // 1. Validation chặn tạo suất chiếu trong quá khứ
+    if (startTime < now) {
+      throw new BadRequestException('Thời gian bắt đầu suất chiếu không được ở trong quá khứ');
+    }
+
+    if (endTime <= startTime) {
+      throw new BadRequestException('Thời gian kết thúc phải sau thời gian bắt đầu suất chiếu');
+    }
+
+    // 2. Thêm 30 phút khoảng nghỉ và dọn dẹp vệ sinh giữa các suất chiếu trong cùng phòng
     const bufferedStartTime = new Date(startTime.getTime() - 30 * 60 * 1000);
     const bufferedEndTime = new Date(endTime.getTime() + 30 * 60 * 1000);
 
-    // Kiểm tra xung đột lịch chiếu trong cùng phòng chiếu
+    // 3. Kiểm tra xung đột lịch chiếu trong cùng phòng chiếu
     const conflictingShowtimes = await this.prisma.showtime.findMany({
       where: {
         hallId: createShowtimeDto.hallId,
