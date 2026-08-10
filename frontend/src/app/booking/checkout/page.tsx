@@ -122,8 +122,11 @@ export default function CheckoutPage() {
         'http://localhost:4000/api/v1/bookings/checkout', 
         {
           reservationId,
+          showtimeId,
+          seatIds: selectedSeats.map(s => s.id),
           paymentMethod,
-          comboIds: combos.map(c => ({ comboId: c.comboId, quantity: c.quantity }))
+          comboIds: combos.map(c => ({ comboId: c.comboId, quantity: c.quantity })),
+          voucherCode: appliedVoucher?.code,
         },
         {
           headers: { Authorization: `Bearer ${accessToken}` }
@@ -277,10 +280,10 @@ export default function CheckoutPage() {
                   </div>
                   <div className="text-center space-y-2">
                     <p className="font-bold text-primary text-2xl">{getTotalAmount().toLocaleString('vi-VN')} ₫</p>
-                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                    <div className="text-sm text-muted-foreground flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                       Đang chờ thanh toán...
-                    </p>
+                    </div>
                   </div>
                   {paymentMethod === 'VIETQR' && (
                     <Button 

@@ -1,13 +1,30 @@
 "use client";
 
 import { useAuthStore } from '@/store/useAuthStore';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LayoutDashboard, Film, MapPin, Users, Settings, LogOut, CalendarRange, Image as ImageIcon, Building2, Popcorn, Ticket, QrCode } from 'lucide-react';
 import { Oswald } from 'next/font/google';
 
 const oswald = Oswald({ subsets: ['latin', 'vietnamese'] });
+
+const navLinks = [
+  { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/admin/movies', icon: Film, label: 'Quản lý Phim' },
+  { href: '/admin/banners', icon: ImageIcon, label: 'Quản lý Banners' },
+  { href: '/admin/cinemas', icon: MapPin, label: 'Quản lý Rạp' },
+  { href: '/admin/showtimes', icon: CalendarRange, label: 'Quản lý Lịch Chiếu' },
+  { href: '/admin/users', icon: Users, label: 'Quản lý Users' },
+  { href: '/admin/settings', icon: Settings, label: 'Cấu hình' },
+];
+
+const secondaryLinks = [
+  { href: '/admin/cities', icon: Building2, label: 'Thành Phố' },
+  { href: '/admin/combos', icon: Popcorn, label: 'Bắp Nước' },
+  { href: '/admin/vouchers', icon: Ticket, label: 'Mã Giảm Giá' },
+  { href: '/admin/tickets/scan', icon: QrCode, label: 'Soát Vé (Scan QR)' },
+];
 
 export default function AdminLayout({
   children,
@@ -16,6 +33,7 @@ export default function AdminLayout({
 }) {
   const { user, isAuthenticated, logout, _hasHydrated } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -57,51 +75,41 @@ export default function AdminLayout({
         </div>
         
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <LayoutDashboard className="h-5 w-5" />
-            Dashboard
-          </Link>
-          <Link href="/admin/movies" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <Film className="h-5 w-5" />
-            Quản lý Phim
-          </Link>
-          <Link href="/admin/banners" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <ImageIcon className="h-5 w-5" />
-            Quản lý Banners
-          </Link>
-          <Link href="/admin/cinemas" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <MapPin className="h-5 w-5" />
-            Quản lý Rạp
-          </Link>
-          <Link href="/admin/showtimes" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <CalendarRange className="h-5 w-5" />
-            Quản lý Lịch Chiếu
-          </Link>
-          <Link href="/admin/users" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <Users className="h-5 w-5" />
-            Quản lý Users
-          </Link>
-          <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <Settings className="h-5 w-5" />
-            Cấu hình
-          </Link>
+          {navLinks.map((link) => {
+            const isActive = link.href === '/admin' ? pathname === '/admin' : pathname.startsWith(link.href);
+            return (
+              <Link 
+                key={link.href}
+                href={link.href} 
+                onClick={(e) => {
+                  if (isActive) e.preventDefault();
+                }}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary/20 text-primary border-r-2 border-primary' : 'hover:bg-primary/10 hover:text-primary'}`}
+              >
+                <link.icon className="h-5 w-5" />
+                {link.label}
+              </Link>
+            );
+          })}
+          
           <div className="pt-4 mt-4 border-t border-border/50" />
-          <Link href="/admin/cities" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <Building2 className="h-5 w-5" />
-            Thành Phố
-          </Link>
-          <Link href="/admin/combos" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <Popcorn className="h-5 w-5" />
-            Bắp Nước
-          </Link>
-          <Link href="/admin/vouchers" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <Ticket className="h-5 w-5" />
-            Mã Giảm Giá
-          </Link>
-          <Link href="/admin/tickets/scan" className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
-            <QrCode className="h-5 w-5" />
-            Soát Vé (Scan QR)
-          </Link>
+          
+          {secondaryLinks.map((link) => {
+            const isActive = pathname.startsWith(link.href);
+            return (
+              <Link 
+                key={link.href}
+                href={link.href} 
+                onClick={(e) => {
+                  if (isActive) e.preventDefault();
+                }}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-primary/20 text-primary border-r-2 border-primary' : 'hover:bg-primary/10 hover:text-primary'}`}
+              >
+                <link.icon className="h-5 w-5" />
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
         
         <div className="p-4 border-t border-border">
