@@ -126,14 +126,14 @@ export default function AdminShowtimesPage() {
         if (res.error?.code === 'SHOWTIME_CONFLICT') {
           toast.error('Xung đột lịch chiếu! Vui lòng chọn giờ chiếu khác cách ít nhất 30 phút so với các suất chiếu hiện tại.');
         } else {
-          toast.error('Có lỗi xảy ra');
+          toast.error(res.error?.message || res.message || 'Có lỗi xảy ra');
         }
       }
     } catch (error: any) {
       if (error.response?.data?.error?.code === 'SHOWTIME_CONFLICT') {
         toast.error('Lỗi: Khoảng cách giữa các suất chiếu cùng phòng phải cách nhau ít nhất 30 phút để dọn dẹp!');
       } else {
-        toast.error('Lỗi kết nối Server');
+        toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
       }
     }
   };

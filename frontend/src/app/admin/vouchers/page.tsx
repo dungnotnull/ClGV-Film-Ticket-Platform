@@ -33,7 +33,7 @@ export default function AdminVouchersPage() {
   const fetchVouchers = async () => {
     try {
       const res = await api.get('/admin/vouchers');
-      if (res.success) setVouchers(res.data || []);
+      if (res.success) setVouchers(Array.isArray(res.data) ? res.data : (res.data?.data || []));
     } catch (error) {
       toast.error('Lỗi khi tải danh sách mã giảm giá');
     } finally {

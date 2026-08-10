@@ -14,20 +14,22 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    if (!_hasHydrated) return; // Wait for hydration
+    
     if (!isAuthenticated) {
       router.push('/login');
     } else if (user?.role !== 'ADMIN') {
       router.push('/');
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, _hasHydrated]);
 
-  if (!mounted || !user || user.role !== 'ADMIN') return null;
+  if (!mounted || !_hasHydrated || !user || user.role !== 'ADMIN') return null;
 
   return (
     <div className={`flex h-[calc(100vh-4rem)] relative overflow-hidden bg-black ${oswald.className}`}>

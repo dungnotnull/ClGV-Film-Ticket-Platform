@@ -72,7 +72,7 @@ export default function AdminUsersPage() {
       setIsRoleDialogOpen(false);
       fetchUsers();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+      toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
     }
   };
 
@@ -90,7 +90,7 @@ export default function AdminUsersPage() {
       setIsMembershipDialogOpen(false);
       fetchUsers();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+      toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
     }
   };
 
@@ -108,7 +108,7 @@ export default function AdminUsersPage() {
       setUserToDelete(null);
       fetchUsers();
     } catch (error: any) {
-      toast.error('Có lỗi xảy ra khi xóa');
+      toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
     }
   };
 

@@ -4,9 +4,19 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { ChevronLeft, CreditCard, Wallet, AlertCircle, Ticket } from 'lucide-react';
+import { ChevronLeft, CreditCard, Wallet, AlertCircle, Ticket, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useBookingStore } from '@/store/useBookingStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { QRCodeSVG } from 'qrcode.react';
@@ -24,10 +34,12 @@ export default function CheckoutPage() {
   } = useBookingStore();
   
   const { isAuthenticated, user, accessToken } = useAuthStore();
-  const [paymentMethod, setPaymentMethod] = useState<'VNPAY' | 'CGV_CARD'>('VNPAY');
+  const [paymentMethod, setPaymentMethod] = useState<'VNPAY' | 'CGV_CARD' | 'VIETQR'>('VNPAY');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentQr, setPaymentQr] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
+  const [showExitPrompt, setShowExitPrompt] = useState(false);
+  const [exitAction, setExitAction] = useState<(() => void) | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -39,6 +51,23 @@ export default function CheckoutPage() {
       router.push('/booking/showtimes');
     }
   }, [isAuthenticated, selectedSeats, reservationId, router]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ''; // Required for Chrome
+      
+      // Use Beacon API to reliably send the release-seat request when tab closes
+      if (reservationId && accessToken) {
+        const url = 'http://localhost:4000/api/v1/bookings/release-seat';
+        const body = JSON.stringify({ reservationId });
+        navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [reservationId, accessToken]);
 
   const handleCheckout = async () => {
     setIsProcessing(true);
@@ -66,6 +95,9 @@ export default function CheckoutPage() {
             'http://localhost:3000/payment/mock-gateway'
           );
           window.location.href = frontendPaymentUrl;
+        } else if (paymentMethod === 'VIETQR') {
+          setPaymentQr(paymentUrl);
+          setBookingId(bookingId);
         } else {
           // CGV Card deducts balance immediately
           toast.success('Thanh toán thành công bằng ví CGV!');
@@ -106,12 +138,18 @@ export default function CheckoutPage() {
       <div className="container mx-auto px-4 max-w-5xl">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <Button variant="ghost" size="icon" onClick={() => {
+              setExitAction(() => () => router.back());
+              setShowExitPrompt(true);
+            }}>
               <ChevronLeft className="w-6 h-6" />
             </Button>
             <h1 className="text-3xl font-bold text-primary">Thanh Toán</h1>
           </div>
-          <Button variant="destructive" variant="outline" className="border-destructive text-destructive hover:bg-destructive hover:text-white" onClick={handleCancelBooking}>
+          <Button variant="destructive" className="border-destructive text-white hover:bg-destructive/90" onClick={() => {
+            setExitAction(() => handleCancelBooking);
+            setShowExitPrompt(true);
+          }}>
             Hủy Đặt Vé
           </Button>
         </div>
@@ -161,6 +199,24 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                <div 
+                  className={`p-4 border rounded-lg cursor-pointer flex items-center justify-between transition-colors ${paymentMethod === 'VIETQR' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
+                  onClick={() => setPaymentMethod('VIETQR')}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="bg-white p-2 rounded">
+                      <QrCode className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold">Thanh toán qua VietQR</h3>
+                      <p className="text-sm text-muted-foreground">Quét mã bằng ứng dụng ngân hàng</p>
+                    </div>
+                  </div>
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'VIETQR' ? 'border-primary' : 'border-muted'}`}>
+                    {paymentMethod === 'VIETQR' && <div className="w-3 h-3 bg-primary rounded-full" />}
+                  </div>
+                </div>
+
                 {paymentMethod === 'CGV_CARD' && (user?.cgvCardBalance || 0) < getTotalAmount() && (
                   <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded-lg">
                     <AlertCircle className="w-4 h-4" /> Số dư ví không đủ để thanh toán.
@@ -174,13 +230,17 @@ export default function CheckoutPage() {
                 <CardContent className="p-8 flex flex-col items-center justify-center space-y-6">
                   <h3 className="text-xl font-bold text-center">Quét mã QR để thanh toán</h3>
                   <div className="bg-white p-4 rounded-xl">
-                    <QRCodeSVG 
-                      value={paymentQr}
-                      size={200}
-                      bgColor={"#ffffff"}
-                      fgColor={"#000000"}
-                      level={"Q"}
-                    />
+                    {paymentMethod === 'VIETQR' ? (
+                      <img src={paymentQr} alt="VietQR" className="w-[200px] h-[200px] object-contain" />
+                    ) : (
+                      <QRCodeSVG 
+                        value={paymentQr}
+                        size={200}
+                        bgColor={"#ffffff"}
+                        fgColor={"#000000"}
+                        level={"Q"}
+                      />
+                    )}
                   </div>
                   <div className="text-center space-y-2">
                     <p className="font-bold text-primary text-2xl">{getTotalAmount().toLocaleString('vi-VN')} ₫</p>
@@ -189,6 +249,17 @@ export default function CheckoutPage() {
                       Đang chờ thanh toán...
                     </p>
                   </div>
+                  {paymentMethod === 'VIETQR' && (
+                    <Button 
+                      className="w-full mt-4" 
+                      onClick={() => {
+                        resetBooking();
+                        router.push(`/booking/success?bookingId=${bookingId}`);
+                      }}
+                    >
+                      Tôi đã hoàn tất thanh toán
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -261,6 +332,39 @@ export default function CheckoutPage() {
 
         </div>
       </div>
+
+      <AlertDialog open={showExitPrompt} onOpenChange={setShowExitPrompt}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hủy thanh toán và thoát?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn thoát khỏi trang thanh toán? Chỗ ngồi bạn đã chọn sẽ bị hủy giữ và đơn hàng sẽ bị hủy.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Ở lại trang</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-destructive hover:bg-destructive/90 text-white"
+              onClick={async () => {
+                // Call release seat API before executing the exit action
+                try {
+                  await axios.post(
+                    'http://localhost:4000/api/v1/bookings/release-seat',
+                    { reservationId },
+                    { headers: { Authorization: `Bearer ${accessToken}` } }
+                  );
+                } catch (e) {
+                  console.error(e);
+                }
+                resetBooking();
+                if (exitAction) exitAction();
+              }}
+            >
+              Đồng ý thoát
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

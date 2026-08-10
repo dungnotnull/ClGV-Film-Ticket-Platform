@@ -16,17 +16,19 @@ const navItems = [
 export default function UserLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
+    if (!_hasHydrated) return;
+    
     if (!isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, _hasHydrated]);
 
-  if (!isMounted || !isAuthenticated) return null;
+  if (!isMounted || !_hasHydrated || !isAuthenticated) return null;
 
   return (
     <div className="container mx-auto px-4 py-8">

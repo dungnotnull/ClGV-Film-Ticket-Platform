@@ -71,7 +71,7 @@ export default function AdminCombosPage() {
       setIsDialogOpen(false);
       fetchCombos();
     } catch (error: any) {
-      toast.error(error.response?.data?.error?.message || 'Có lỗi xảy ra');
+      toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
     }
   };
 
@@ -82,7 +82,7 @@ export default function AdminCombosPage() {
       toast.success('Xóa combo thành công');
       fetchCombos();
     } catch (error: any) {
-      toast.error('Có lỗi xảy ra khi xóa');
+      toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
     }
   };
 

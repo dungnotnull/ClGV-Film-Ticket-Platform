@@ -51,7 +51,7 @@ export default function AdminMoviesPage() {
     trailerUrl: '',
     ageRating: 'T18',
     languageType: 'SUB',
-    status: 'NOW_SHOWING',
+    status: 'COMING_SOON',
     description: '',
   });
 
@@ -86,7 +86,7 @@ export default function AdminMoviesPage() {
       trailerUrl: '',
       ageRating: 'T18',
       languageType: 'SUB',
-      status: 'NOW_SHOWING',
+      status: 'COMING_SOON',
       description: '',
     });
     setSelectedMovie(null);
@@ -132,11 +132,11 @@ export default function AdminMoviesPage() {
         resetForm();
         fetchMovies();
       } else {
-        toast.error('Có lỗi xảy ra');
+        toast.error(res.error?.message || res.message || 'Có lỗi xảy ra');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to add movie', error);
-      toast.error('Lỗi kết nối Server');
+      toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
     }
   };
 
@@ -156,11 +156,11 @@ export default function AdminMoviesPage() {
         resetForm();
         fetchMovies();
       } else {
-        toast.error('Có lỗi xảy ra khi cập nhật');
+        toast.error(res.error?.message || res.message || 'Có lỗi xảy ra khi cập nhật');
       }
-    } catch (error) {
-      console.error('Failed to edit movie', error);
-      toast.error('Lỗi kết nối Server');
+    } catch (error: any) {
+      console.error('Failed to update movie', error);
+      toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
     }
   };
 
@@ -174,11 +174,11 @@ export default function AdminMoviesPage() {
         setSelectedMovie(null);
         fetchMovies();
       } else {
-        toast.error('Có lỗi xảy ra khi xóa');
+        toast.error(res.error?.message || res.message || 'Có lỗi xảy ra khi xóa');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete movie', error);
-      toast.error('Lỗi kết nối Server');
+      toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
     }
   };
 
@@ -360,9 +360,9 @@ function MovieFormFields({ formData, setFormData }: { formData: any, setFormData
       } else {
         toast.error('Lỗi khi tải ảnh lên');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload failed', error);
-      toast.error('Lỗi kết nối Server');
+      toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
     } finally {
       setUploading(false);
     }
@@ -406,11 +406,11 @@ function MovieFormFields({ formData, setFormData }: { formData: any, setFormData
           <Input type="date" value={formData.releaseDate} onChange={e => setFormData({...formData, releaseDate: e.target.value})} />
         </div>
         <div className="space-y-2">
-          <Label>Trạng thái</Label>
+          <Label>Trạng thái (Tự động)</Label>
           <select 
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+            className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-muted-foreground ring-offset-background cursor-not-allowed"
             value={formData.status} 
-            onChange={e => setFormData({...formData, status: e.target.value})}
+            disabled
           >
             <option value="NOW_SHOWING">Đang chiếu</option>
             <option value="COMING_SOON">Sắp chiếu</option>

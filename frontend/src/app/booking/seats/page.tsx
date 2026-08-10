@@ -138,7 +138,7 @@ function SeatsContent() {
   }, [showtimeId, router, setShowtime]);
 
   const handleSeatClick = (seat: Seat) => {
-    if (seat.status !== 'AVAILABLE' && !selectedSeats.find(s => s.id === seat.id)) {
+    if (seat.status !== 'AVAILABLE' && !selectedSeats.find(s => s.id === seat.id) && seat.heldByUserId !== user?.id) {
       return; // Cannot select unavailable seat
     }
 
@@ -230,7 +230,7 @@ function SeatsContent() {
                     return (
                       <button
                         key={currentSeat.id}
-                        disabled={currentSeat.status !== 'AVAILABLE' && !isSelected}
+                        disabled={currentSeat.status !== 'AVAILABLE' && !isSelected && currentSeat.heldByUserId !== user?.id}
                         onClick={() => handleSeatClick(currentSeat)}
                         className={`
                           relative h-8 md:h-10 rounded-t-lg rounded-b-sm border flex items-center justify-center text-xs font-semibold transition-all

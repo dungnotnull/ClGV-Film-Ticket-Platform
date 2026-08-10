@@ -103,7 +103,7 @@ export default function AdminCinemasPage() {
           setIsAddOpen(false);
           toast.error('Lỗi: Tên rạp đã tồn tại trong hệ thống!');
         } else {
-          toast.error('Có lỗi xảy ra');
+          toast.error(res.error?.message || res.message || 'Có lỗi xảy ra');
         }
       }
     } catch (error: any) {
@@ -112,7 +112,7 @@ export default function AdminCinemasPage() {
         setIsAddOpen(false);
         toast.error('Lỗi: Tên rạp đã tồn tại trong hệ thống!');
       } else {
-        toast.error('Lỗi kết nối Server');
+        toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
       }
     }
   };
@@ -139,7 +139,7 @@ export default function AdminCinemasPage() {
         if (res.error?.code === 'DUPLICATE_HALL_NAME') {
           toast.error('Lỗi: Tên phòng chiếu đã tồn tại trong rạp này!');
         } else {
-          toast.error('Có lỗi xảy ra');
+          toast.error(res.error?.message || res.message || 'Có lỗi xảy ra');
         }
       }
     } catch (error: any) {
@@ -147,7 +147,7 @@ export default function AdminCinemasPage() {
       if (error.response?.data?.error?.code === 'DUPLICATE_HALL_NAME') {
         toast.error('Lỗi: Tên phòng chiếu đã tồn tại trong rạp này!');
       } else {
-        toast.error('Lỗi kết nối Server');
+        toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Lỗi hệ thống');
       }
     }
   };
