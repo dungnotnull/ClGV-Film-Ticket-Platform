@@ -1,18 +1,21 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { RedisService } from '../redis/redis.service';
 import { CreateShowtimeDto } from './dto/create-showtime.dto';
+export declare const SEAT_TYPE_PRICE_MODIFIERS: Record<string, number>;
 export declare class ShowtimeService {
-    private prisma;
-    constructor(prisma: PrismaService);
+    private readonly prisma;
+    private readonly redisService;
+    constructor(prisma: PrismaService, redisService: RedisService);
     create(createShowtimeDto: CreateShowtimeDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         cinemaId: string;
         startTime: Date;
-        endTime: Date;
-        basePrice: number;
         movieId: string;
         hallId: string;
+        endTime: Date;
+        basePrice: number;
     }>;
     findAll(movieId?: string, cinemaId?: string, date?: string): Promise<({
         cinema: {
@@ -38,12 +41,27 @@ export declare class ShowtimeService {
         updatedAt: Date;
         cinemaId: string;
         startTime: Date;
-        endTime: Date;
-        basePrice: number;
         movieId: string;
         hallId: string;
+        endTime: Date;
+        basePrice: number;
     })[]>;
     getShowtimeSeats(showtimeId: string): Promise<{
+        seats: {
+            status: import(".prisma/client").$Enums.SeatStatus;
+            heldByUserId: string;
+            priceModifier: number;
+            price: number;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            type: import(".prisma/client").$Enums.SeatType;
+            expiresAt: Date | null;
+            col: number;
+            row: string;
+            showtimeId: string;
+            seatId: string;
+        }[];
         cinema: {
             name: string;
         };
@@ -54,29 +72,14 @@ export declare class ShowtimeService {
         movie: {
             title: string;
         };
-        seats: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            row: string;
-            col: number;
-            type: import(".prisma/client").$Enums.SeatType;
-            priceModifier: number;
-            status: import(".prisma/client").$Enums.SeatStatus;
-            expiresAt: Date | null;
-            showtimeId: string;
-            seatId: string;
-            heldByUserId: string | null;
-        }[];
-    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         cinemaId: string;
         startTime: Date;
-        endTime: Date;
-        basePrice: number;
         movieId: string;
         hallId: string;
+        endTime: Date;
+        basePrice: number;
     }>;
 }

@@ -10,11 +10,13 @@ exports.ShowtimeModule = void 0;
 const common_1 = require("@nestjs/common");
 const showtime_service_1 = require("./showtime.service");
 const showtime_controller_1 = require("./showtime.controller");
+const redis_module_1 = require("../redis/redis.module");
 let ShowtimeModule = class ShowtimeModule {
 };
 exports.ShowtimeModule = ShowtimeModule;
 exports.ShowtimeModule = ShowtimeModule = __decorate([
     (0, common_1.Module)({
+        imports: [redis_module_1.RedisModule],
         controllers: [showtime_controller_1.ShowtimeController],
         providers: [showtime_service_1.ShowtimeService],
         exports: [showtime_service_1.ShowtimeService],

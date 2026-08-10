@@ -27,12 +27,27 @@ export declare class ShowtimeController {
         updatedAt: Date;
         cinemaId: string;
         startTime: Date;
-        endTime: Date;
-        basePrice: number;
         movieId: string;
         hallId: string;
+        endTime: Date;
+        basePrice: number;
     })[]>;
     getShowtimeSeats(id: string): Promise<{
+        seats: {
+            status: import(".prisma/client").$Enums.SeatStatus;
+            heldByUserId: string;
+            priceModifier: number;
+            price: number;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            type: import(".prisma/client").$Enums.SeatType;
+            expiresAt: Date | null;
+            col: number;
+            row: string;
+            showtimeId: string;
+            seatId: string;
+        }[];
         cinema: {
             name: string;
         };
@@ -43,30 +58,15 @@ export declare class ShowtimeController {
         movie: {
             title: string;
         };
-        seats: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            row: string;
-            col: number;
-            type: import(".prisma/client").$Enums.SeatType;
-            priceModifier: number;
-            status: import(".prisma/client").$Enums.SeatStatus;
-            expiresAt: Date | null;
-            showtimeId: string;
-            seatId: string;
-            heldByUserId: string | null;
-        }[];
-    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         cinemaId: string;
         startTime: Date;
-        endTime: Date;
-        basePrice: number;
         movieId: string;
         hallId: string;
+        endTime: Date;
+        basePrice: number;
     }>;
     create(createShowtimeDto: CreateShowtimeDto): Promise<{
         id: string;
@@ -74,9 +74,9 @@ export declare class ShowtimeController {
         updatedAt: Date;
         cinemaId: string;
         startTime: Date;
-        endTime: Date;
-        basePrice: number;
         movieId: string;
         hallId: string;
+        endTime: Date;
+        basePrice: number;
     }>;
 }

@@ -26,9 +26,9 @@ export declare class CityService {
             createdAt: Date;
             updatedAt: Date;
             name: string;
+            cityId: string;
             address: string;
             amenities: string[];
-            cityId: string;
         }[];
     } & {
         id: string;

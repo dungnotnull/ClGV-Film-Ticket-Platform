@@ -9,7 +9,9 @@ export declare class MovieController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        description: string;
         title: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -20,8 +22,6 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
-        description: string;
     }[]>;
     findOne(id: string): Promise<{
         reviews: ({
@@ -33,8 +33,8 @@ export declare class MovieController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            movieId: string;
             userId: string;
+            movieId: string;
             rating: number;
             comment: string;
         })[];
@@ -45,9 +45,9 @@ export declare class MovieController {
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
+                cityId: string;
                 address: string;
                 amenities: string[];
-                cityId: string;
             };
             hall: {
                 id: string;
@@ -60,16 +60,18 @@ export declare class MovieController {
             updatedAt: Date;
             cinemaId: string;
             startTime: Date;
-            endTime: Date;
-            basePrice: number;
             movieId: string;
             hallId: string;
+            endTime: Date;
+            basePrice: number;
         })[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        description: string;
         title: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -80,14 +82,14 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
-        description: string;
     }>;
     create(createMovieDto: CreateMovieDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        description: string;
         title: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -98,14 +100,14 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
-        description: string;
     }>;
     update(id: string, updateMovieDto: UpdateMovieDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        description: string;
         title: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -116,14 +118,14 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
-        description: string;
     }>;
     remove(id: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        description: string;
         title: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -134,7 +136,5 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
-        description: string;
     }>;
 }

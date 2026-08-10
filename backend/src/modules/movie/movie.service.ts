@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
@@ -8,8 +8,41 @@ import { MovieStatus } from '@prisma/client';
 export class MovieService {
   constructor(private prisma: PrismaService) {}
 
-  // Admin tạo phim mới (xuất hiện động ngay trên trang chủ)
+  /**
+   * Tự động quét và chuyển đổi trạng thái phim từ COMING_SOON (Sắp chiếu)
+   * sang NOW_SHOWING (Đang chiếu) nếu ngày khởi chiếu <= thời điểm hiện tại.
+   */
+  async autoUpdateMovieStatuses() {
+    const now = new Date();
+    await this.prisma.movie.updateMany({
+      where: {
+        status: MovieStatus.COMING_SOON,
+        releaseDate: { lte: now },
+      },
+      data: {
+        status: MovieStatus.NOW_SHOWING,
+      },
+    });
+  }
+
+  // Admin tạo phim mới (mặc định trạng thái COMING_SOON nếu trong tương lai)
   async create(createMovieDto: CreateMovieDto) {
+    const releaseDate = new Date(createMovieDto.releaseDate);
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    // Yêu cầu 3: Không cho phép chọn ngày/giờ khởi chiếu trong quá khứ
+    if (releaseDate < startOfToday) {
+      throw new BadRequestException('Ngày khởi chiếu không được ở trong quá khứ');
+    }
+
+    const now = new Date();
+    // Yêu cầu 1 & 2: Nếu tạo phim có releaseDate trong tương lai thì mặc định COMING_SOON
+    let status = createMovieDto.status;
+    if (!status) {
+      status = releaseDate <= now ? MovieStatus.NOW_SHOWING : MovieStatus.COMING_SOON;
+    }
+
     return this.prisma.movie.create({
       data: {
         title: createMovieDto.title,
@@ -18,19 +51,21 @@ export class MovieService {
         cast: createMovieDto.cast,
         genres: createMovieDto.genres || [],
         durationMinutes: createMovieDto.durationMinutes,
-        releaseDate: new Date(createMovieDto.releaseDate),
+        releaseDate,
         posterUrl: createMovieDto.posterUrl,
         trailerUrl: createMovieDto.trailerUrl,
         ageRating: createMovieDto.ageRating,
         languageType: createMovieDto.languageType || 'SUB',
-        status: createMovieDto.status || MovieStatus.NOW_SHOWING,
+        status,
         description: createMovieDto.description,
       },
     });
   }
 
-  // Danh sách phim lọc theo status, genre, search
+  // Danh sách phim lọc theo status, genre, search (Tự động cập nhật trạng thái trước khi trả về)
   async findAll(status?: MovieStatus, genre?: string, search?: string) {
+    await this.autoUpdateMovieStatuses();
+
     return this.prisma.movie.findMany({
       where: {
         ...(status && { status }),
@@ -49,6 +84,8 @@ export class MovieService {
 
   // Chi tiết phim và các suất chiếu khả dụng
   async findOne(id: string) {
+    await this.autoUpdateMovieStatuses();
+
     const movie = await this.prisma.movie.findUnique({
       where: { id },
       include: {
@@ -80,6 +117,16 @@ export class MovieService {
   // Admin cập nhật thông tin phim
   async update(id: string, updateMovieDto: UpdateMovieDto) {
     await this.findOne(id);
+
+    if (updateMovieDto.releaseDate) {
+      const releaseDate = new Date(updateMovieDto.releaseDate);
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+
+      if (releaseDate < startOfToday) {
+        throw new BadRequestException('Ngày khởi chiếu không được ở trong quá khứ');
+      }
+    }
 
     return this.prisma.movie.update({
       where: { id },

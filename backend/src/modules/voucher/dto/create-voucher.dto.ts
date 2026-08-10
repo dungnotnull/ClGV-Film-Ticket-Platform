@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
-import { DiscountType } from '@prisma/client';
+import { DiscountType, BannerStatus } from '@prisma/client';
 
 export class CreateVoucherDto {
   @ApiProperty({ example: 'CGV50K', description: 'Mã giảm giá/Voucher' })
@@ -27,8 +27,20 @@ export class CreateVoucherDto {
   @IsOptional()
   minOrderValue?: number;
 
+  @ApiProperty({ example: 100000, required: false, description: 'Số tiền giảm tối đa VND (khi discountType = PERCENTAGE)' })
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  maxDiscountAmount?: number;
+
+  @ApiProperty({ enum: BannerStatus, required: false, example: 'ACTIVE', description: 'Trạng thái voucher' })
+  @IsEnum(BannerStatus)
+  @IsOptional()
+  status?: BannerStatus;
+
   @ApiProperty({ example: '2026-12-31T23:59:59.000Z', description: 'Thời hạn sử dụng' })
   @IsString()
   @IsNotEmpty()
   expiresAt: string;
 }
+

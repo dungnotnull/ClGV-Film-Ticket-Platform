@@ -11,7 +11,7 @@ describe('BookingService', () => {
   beforeEach(() => {
     prismaMock = {
       showtime: { findUnique: vi.fn() },
-      showtimeSeat: { findMany: vi.fn(), updateMany: vi.fn() },
+      showtimeSeat: { findMany: vi.fn().mockResolvedValue([]), updateMany: vi.fn() },
       booking: { create: vi.fn(), update: vi.fn() },
       ticket: { create: vi.fn() },
       user: { findUnique: vi.fn(), update: vi.fn() },
@@ -54,6 +54,18 @@ describe('BookingService', () => {
       service.holdSeats('usr_101', {
         showtimeId: 'st_456',
         seatIds: ['H12', 'H13'],
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('nên báo lỗi SEAT_ALREADY_SOLD khi ghế đã bị bán trong Database', async () => {
+    prismaMock.showtime.findUnique.mockResolvedValue({ id: 'st_456' });
+    prismaMock.showtimeSeat.findMany.mockResolvedValue([{ seatId: 'H12', status: 'SOLD' }]);
+
+    await expect(
+      service.holdSeats('usr_101', {
+        showtimeId: 'st_456',
+        seatIds: ['H12'],
       }),
     ).rejects.toThrow();
   });

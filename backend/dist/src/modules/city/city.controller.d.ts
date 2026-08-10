@@ -18,9 +18,9 @@ export declare class CityController {
             createdAt: Date;
             updatedAt: Date;
             name: string;
+            cityId: string;
             address: string;
             amenities: string[];
-            cityId: string;
         }[];
     } & {
         id: string;

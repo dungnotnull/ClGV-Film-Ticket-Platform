@@ -7,18 +7,20 @@ export declare class HomeController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            displayOrder: number;
             title: string;
-            status: import(".prisma/client").$Enums.BannerStatus;
+            displayOrder: number;
             imageUrl: string;
             linkUrl: string | null;
+            status: import(".prisma/client").$Enums.BannerStatus;
         }[];
         movies: {
             nowShowing: {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                description: string;
                 title: string;
+                status: import(".prisma/client").$Enums.MovieStatus;
                 titleOriginal: string | null;
                 director: string | null;
                 cast: string | null;
@@ -29,14 +31,14 @@ export declare class HomeController {
                 trailerUrl: string | null;
                 ageRating: import(".prisma/client").$Enums.AgeRating;
                 languageType: string;
-                status: import(".prisma/client").$Enums.MovieStatus;
-                description: string;
             }[];
             comingSoon: {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                description: string;
                 title: string;
+                status: import(".prisma/client").$Enums.MovieStatus;
                 titleOriginal: string | null;
                 director: string | null;
                 cast: string | null;
@@ -47,8 +49,6 @@ export declare class HomeController {
                 trailerUrl: string | null;
                 ageRating: import(".prisma/client").$Enums.AgeRating;
                 languageType: string;
-                status: import(".prisma/client").$Enums.MovieStatus;
-                description: string;
             }[];
         };
         cities: {
@@ -77,9 +77,9 @@ export declare class HomeController {
             createdAt: Date;
             updatedAt: Date;
             name: string;
+            cityId: string;
             address: string;
             amenities: string[];
-            cityId: string;
         })[];
     }>;
 }

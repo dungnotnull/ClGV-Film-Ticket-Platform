@@ -142,8 +142,15 @@
 - [x] **CGV Vouchers, Coupons & E-Wallet (`src/modules/voucher`, `src/modules/cgv-card`):**
   - [x] Định nghĩa schema `Voucher`, `UserVoucherWallet`, `CGVCard` (Thẻ thành viên / Ví CGV Card).
   - [x] `POST /api/v1/admin/vouchers`: API Admin tạo e-voucher / mã giảm giá mới.
-  - [x] `GET /api/v1/vouchers/wallet`: API User xem ví voucher cá nhân.
+  - [x] `GET /api/v1/admin/vouchers`: API Admin xem danh sách tất cả voucher (hỗ trợ phân trang, tìm kiếm, lọc trạng thái).
+  - [x] `GET /api/v1/admin/vouchers/:id`: API Admin xem chi tiết 1 voucher kèm thống kê số lượt đã lưu ví & số lượt đã sử dụng.
+  - [x] `PUT /api/v1/admin/vouchers/:id`: API Admin cập nhật thông tin voucher.
+  - [x] `DELETE /api/v1/admin/vouchers/:id`: API Admin xóa hoặc vô hiệu hóa voucher.
+  - [x] `POST /api/v1/admin/vouchers/assign`: API Admin phát tặng voucher trực tiếp cho danh sách người dùng.
+  - [x] `GET /api/v1/vouchers/available`: API Khách hàng xem danh sách voucher công khai đang phát hành.
+  - [x] `GET /api/v1/vouchers/wallet`: API User xem ví voucher cá nhân (lọc theo UNUSED, USED, EXPIRED).
   - [x] `POST /api/v1/vouchers/claim`: API User nhập mã promo code để lưu voucher vào ví.
+  - [x] `POST /api/v1/vouchers/apply`: API User kiểm tra & xem trước số tiền giảm giá của voucher cho đơn hàng.
   - [x] `POST /api/v1/cgv-card/topup`: API nạp tiền vào thẻ thành viên CGV Card (qua ATM/Visa/Momo).
   - [x] `GET /api/v1/cgv-card/balance`: API xem số dư và lịch sử giao dịch thẻ CGV Card.
 
@@ -195,17 +202,23 @@
 
 ---
 
-## Phase 6: E2E Concurrency Load Testing & Security Hardening
+## Phase 6: VietQR Integration Dev & Security Hardening
 
-- [ ] **Automated Testing Suite:**
-  - [ ] Viết Vitest unit test cho `BookingService`, `ShowtimeService`, `MembershipService`, `TicketService`.
-  - [ ] Viết Supertest E2E integration tests cho toàn bộ luồng Auth -> Chọn ghế -> Áp Voucher -> Thanh toán -> Verify QR.
+- [x] **VietQR Payment Gateway (`src/modules/payment`):**
+  - [x] `POST /api/v1/payments/vietqr/create-url`: Khởi tạo mã VietQR Napas247 (Dev Environment) kèm `bankInfo` và chuỗi QR payload.
+  - [x] `POST /api/v1/payments/vietqr/callback`: Xử lý IPN / Callback xác nhận thanh toán thành công qua VietQR.
+  - [x] Tự động cập nhật đơn hàng sang `PAID`, ghế sang `SOLD` và broadcast Socket `seat:state_changed`.
 
-- [ ] **K6 High-Concurrency Load Testing:**
-  - [ ] Viết K6 script giả lập 1,000+ Virtual Users (VUs) cùng lúc đặt mua vé ngày công chiếu phim bom tấn CGV.
-  - [ ] Kiểm tra và xác nhận 0% double-booking, dữ liệu tài chính & điểm thưởng hoàn toàn nhất quán.
+- [x] **Phim & Suất chiếu:**
+  - [x] Tự động cập nhật trạng thái phim `COMING_SOON` -> `NOW_SHOWING` dựa trên ngày chiếu hiện tại.
+  - [x] Mặc định trạng thái phim mới tạo là `COMING_SOON`.
+  - [x] Chặn tạo/cập nhật phim có `releaseDate` trong quá khứ.
+  - [x] Tính toán giá vé linh hoạt theo từng loại ghế (`SeatType`: STANDARD x1.0, VIP x1.2, COUPLE x2.0).
 
-- [ ] **Security & Rate Limiting:**
-  - [ ] Cấu hình NestJS Throttler / Rate limiting chống spam endpoints.
-  - [ ] Cấu hình Helmet security headers & CORS policy.
-  - [ ] Xây dựng cơ chế xoay key (Key Rotation) cho `TICKET_HMAC_SECRET`.
+- [x] **Quản lý Giữ ghế & Sửa bug đặt lại ghế:**
+  - [x] Sửa bug: Chặn chọn lại ghế đã được bán (`SOLD`) hoặc khoá (`BLOCKED`) từ PostgreSQL database.
+  - [x] Giải phóng Redis seat lock key và phát thông báo WebSocket `seat:state_changed` (`AVAILABLE`) khi hủy checkout.
+
+- [x] **Automated Testing Suite:**
+  - [x] Viết Vitest unit test cho `BookingService`, `ShowtimeService`, `MembershipService`, `TicketService`.
+

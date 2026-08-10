@@ -81,7 +81,7 @@ __decorate([
     __metadata("design:type", String)
 ], CreateMovieDto.prototype, "languageType", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ enum: client_1.MovieStatus, example: client_1.MovieStatus.NOW_SHOWING, description: 'Trạng thái phim' }),
+    (0, swagger_1.ApiPropertyOptional)({ enum: client_1.MovieStatus, example: client_1.MovieStatus.COMING_SOON, description: 'Trạng thái phim (mặc định COMING_SOON)' }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(client_1.MovieStatus),
     __metadata("design:type", String)

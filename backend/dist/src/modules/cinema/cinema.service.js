@@ -26,15 +26,74 @@ let CinemaService = class CinemaService {
                 message: 'Thành phố được chọn không tồn tại',
             });
         }
+        const existingCinema = await this.prisma.cinema.findFirst({
+            where: {
+                name: { equals: createCinemaDto.name.trim(), mode: 'insensitive' },
+            },
+        });
+        if (existingCinema) {
+            throw new common_1.ConflictException({
+                code: 'DUPLICATE_CINEMA_NAME',
+                message: 'Tên cụm rạp đã tồn tại trong hệ thống',
+            });
+        }
         return this.prisma.cinema.create({
             data: {
                 cityId: createCinemaDto.cityId,
-                name: createCinemaDto.name,
+                name: createCinemaDto.name.trim(),
                 address: createCinemaDto.address,
                 phone: createCinemaDto.phone,
                 amenities: createCinemaDto.amenities || [],
             },
         });
+    }
+    async updateCinema(id, updateCinemaDto) {
+        const existingCinema = await this.findOneCinema(id);
+        if (updateCinemaDto.cityId) {
+            const city = await this.prisma.city.findUnique({
+                where: { id: updateCinemaDto.cityId },
+            });
+            if (!city) {
+                throw new common_1.NotFoundException({
+                    code: 'CITY_NOT_FOUND',
+                    message: 'Thành phố được chọn không tồn tại',
+                });
+            }
+        }
+        if (updateCinemaDto.name && updateCinemaDto.name.trim() !== existingCinema.name) {
+            const duplicateCinema = await this.prisma.cinema.findFirst({
+                where: {
+                    id: { not: id },
+                    name: { equals: updateCinemaDto.name.trim(), mode: 'insensitive' },
+                },
+            });
+            if (duplicateCinema) {
+                throw new common_1.ConflictException({
+                    code: 'DUPLICATE_CINEMA_NAME',
+                    message: 'Tên cụm rạp đã tồn tại trong hệ thống',
+                });
+            }
+        }
+        return this.prisma.cinema.update({
+            where: { id },
+            data: {
+                ...(updateCinemaDto.cityId && { cityId: updateCinemaDto.cityId }),
+                ...(updateCinemaDto.name && { name: updateCinemaDto.name.trim() }),
+                ...(updateCinemaDto.address && { address: updateCinemaDto.address }),
+                ...(updateCinemaDto.phone !== undefined && { phone: updateCinemaDto.phone }),
+                ...(updateCinemaDto.amenities && { amenities: updateCinemaDto.amenities }),
+            },
+        });
+    }
+    async deleteCinema(id) {
+        await this.findOneCinema(id);
+        await this.prisma.cinema.delete({
+            where: { id },
+        });
+        return {
+            success: true,
+            message: 'Xóa cụm rạp thành công',
+        };
     }
     async findAllCinemas(cityId) {
         return this.prisma.cinema.findMany({
@@ -67,14 +126,44 @@ let CinemaService = class CinemaService {
     }
     async createHall(createHallDto) {
         await this.findOneCinema(createHallDto.cinemaId);
+        const existingHall = await this.prisma.hall.findFirst({
+            where: {
+                cinemaId: createHallDto.cinemaId,
+                name: { equals: createHallDto.name.trim(), mode: 'insensitive' },
+            },
+        });
+        if (existingHall) {
+            throw new common_1.ConflictException({
+                code: 'DUPLICATE_HALL_NAME',
+                message: 'Tên phòng chiếu đã tồn tại trong rạp này',
+            });
+        }
         return this.prisma.hall.create({
             data: {
                 cinemaId: createHallDto.cinemaId,
-                name: createHallDto.name,
+                name: createHallDto.name.trim(),
                 screenType: createHallDto.screenType,
                 roomMatrix: createHallDto.roomMatrix,
             },
         });
+    }
+    async deleteHall(hallId) {
+        const hall = await this.prisma.hall.findUnique({
+            where: { id: hallId },
+        });
+        if (!hall) {
+            throw new common_1.NotFoundException({
+                code: 'NOT_FOUND',
+                message: 'Phòng chiếu không tồn tại',
+            });
+        }
+        await this.prisma.hall.delete({
+            where: { id: hallId },
+        });
+        return {
+            success: true,
+            message: 'Xóa phòng chiếu thành công',
+        };
     }
     async getHallMatrix(hallId) {
         const hall = await this.prisma.hall.findUnique({

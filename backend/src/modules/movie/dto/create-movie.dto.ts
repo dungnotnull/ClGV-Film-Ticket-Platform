@@ -56,7 +56,7 @@ export class CreateMovieDto {
   @IsString()
   languageType?: string;
 
-  @ApiPropertyOptional({ enum: MovieStatus, example: MovieStatus.NOW_SHOWING, description: 'Trạng thái phim' })
+  @ApiPropertyOptional({ enum: MovieStatus, example: MovieStatus.COMING_SOON, description: 'Trạng thái phim (mặc định COMING_SOON)' })
   @IsOptional()
   @IsEnum(MovieStatus)
   status?: MovieStatus;

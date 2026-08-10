@@ -9,19 +9,28 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShowtimeService = void 0;
+exports.ShowtimeService = exports.SEAT_TYPE_PRICE_MODIFIERS = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const redis_service_1 = require("../redis/redis.service");
 const client_1 = require("@prisma/client");
+exports.SEAT_TYPE_PRICE_MODIFIERS = {
+    STANDARD: 1.0,
+    VIP: 1.2,
+    COUPLE: 2.0,
+    ACCESSIBLE: 1.0,
+    EMPTY_SPACE: 0.0,
+};
 let ShowtimeService = class ShowtimeService {
-    constructor(prisma) {
+    constructor(prisma, redisService) {
         this.prisma = prisma;
+        this.redisService = redisService;
     }
     async create(createShowtimeDto) {
         const startTime = new Date(createShowtimeDto.startTime);
         const endTime = new Date(createShowtimeDto.endTime);
-        const bufferedStartTime = new Date(startTime.getTime() - 15 * 60 * 1000);
-        const bufferedEndTime = new Date(endTime.getTime() + 15 * 60 * 1000);
+        const bufferedStartTime = new Date(startTime.getTime() - 30 * 60 * 1000);
+        const bufferedEndTime = new Date(endTime.getTime() + 30 * 60 * 1000);
         const conflictingShowtimes = await this.prisma.showtime.findMany({
             where: {
                 hallId: createShowtimeDto.hallId,
@@ -36,7 +45,7 @@ let ShowtimeService = class ShowtimeService {
         if (conflictingShowtimes.length > 0) {
             throw new common_1.ConflictException({
                 code: 'SHOWTIME_CONFLICT',
-                message: 'Suất chiếu bị trùng lặp thời gian hoặc vi phạm khoảng nghỉ 15 phút dọn phòng chiếu',
+                message: 'Suất chiếu bị trùng lặp thời gian hoặc vi phạm khoảng nghỉ 30 phút dọn phòng chiếu',
             });
         }
         const hall = await this.prisma.hall.findUnique({
@@ -65,6 +74,8 @@ let ShowtimeService = class ShowtimeService {
                 if (Array.isArray(row)) {
                     for (const seat of row) {
                         if (seat && seat.type !== 'EMPTY_SPACE') {
+                            const defaultModifier = exports.SEAT_TYPE_PRICE_MODIFIERS[seat.type] || 1.0;
+                            const priceModifier = seat.priceModifier && seat.priceModifier !== 1.0 ? seat.priceModifier : defaultModifier;
                             seatsToCreate.push({
                                 showtimeId: showtime.id,
                                 seatId: seat.id,
@@ -72,7 +83,7 @@ let ShowtimeService = class ShowtimeService {
                                 col: seat.col,
                                 type: seat.type,
                                 status: seat.isBlocked ? client_1.SeatStatus.BLOCKED : client_1.SeatStatus.AVAILABLE,
-                                priceModifier: seat.priceModifier || 1.0,
+                                priceModifier,
                             });
                         }
                     }
@@ -130,12 +141,38 @@ let ShowtimeService = class ShowtimeService {
                 message: 'Suất chiếu không tồn tại',
             });
         }
-        return showtime;
+        const seatsWithPriceAndLock = await Promise.all(showtime.seats.map(async (seat) => {
+            const modifier = seat.priceModifier && seat.priceModifier !== 1.0
+                ? seat.priceModifier
+                : exports.SEAT_TYPE_PRICE_MODIFIERS[seat.type] || 1.0;
+            const calculatedPrice = Math.round(showtime.basePrice * modifier);
+            let currentStatus = seat.status;
+            let heldByUserId = seat.heldByUserId || null;
+            if (seat.status === client_1.SeatStatus.AVAILABLE) {
+                const lockHolder = await this.redisService.getSeatLockHolder(showtimeId, seat.seatId);
+                if (lockHolder) {
+                    currentStatus = client_1.SeatStatus.HOLDING;
+                    heldByUserId = lockHolder;
+                }
+            }
+            return {
+                ...seat,
+                status: currentStatus,
+                heldByUserId,
+                priceModifier: modifier,
+                price: calculatedPrice,
+            };
+        }));
+        return {
+            ...showtime,
+            seats: seatsWithPriceAndLock,
+        };
     }
 };
 exports.ShowtimeService = ShowtimeService;
 exports.ShowtimeService = ShowtimeService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        redis_service_1.RedisService])
 ], ShowtimeService);
 //# sourceMappingURL=showtime.service.js.map

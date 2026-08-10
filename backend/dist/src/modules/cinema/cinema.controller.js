@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
 const cinema_service_1 = require("./cinema.service");
 const create_cinema_dto_1 = require("./dto/create-cinema.dto");
+const update_cinema_dto_1 = require("./dto/update-cinema.dto");
 const create_hall_dto_1 = require("./dto/create-hall.dto");
 const update_matrix_dto_1 = require("./dto/update-matrix.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
@@ -36,8 +37,17 @@ let CinemaController = class CinemaController {
     async createCinema(createCinemaDto) {
         return this.cinemaService.createCinema(createCinemaDto);
     }
+    async updateCinema(id, updateCinemaDto) {
+        return this.cinemaService.updateCinema(id, updateCinemaDto);
+    }
+    async deleteCinema(id) {
+        return this.cinemaService.deleteCinema(id);
+    }
     async createHall(createHallDto) {
         return this.cinemaService.createHall(createHallDto);
+    }
+    async deleteHall(id) {
+        return this.cinemaService.deleteHall(id);
     }
     async getHallMatrix(id) {
         return this.cinemaService.getHallMatrix(id);
@@ -76,6 +86,29 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CinemaController.prototype, "createCinema", null);
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Admin cập nhật thông tin cụm rạp' }),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
+    (0, common_1.Put)('cinemas/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_cinema_dto_1.UpdateCinemaDto]),
+    __metadata("design:returntype", Promise)
+], CinemaController.prototype, "updateCinema", null);
+__decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Admin xóa cụm rạp' }),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
+    (0, common_1.Delete)('cinemas/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], CinemaController.prototype, "deleteCinema", null);
+__decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Admin tạo mới phòng chiếu' }),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
@@ -86,6 +119,17 @@ __decorate([
     __metadata("design:paramtypes", [create_hall_dto_1.CreateHallDto]),
     __metadata("design:returntype", Promise)
 ], CinemaController.prototype, "createHall", null);
+__decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Admin xóa phòng chiếu' }),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
+    (0, common_1.Delete)('halls/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], CinemaController.prototype, "deleteHall", null);
 __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Lấy sơ đồ ma trận ghế của phòng chiếu' }),
     (0, common_1.Get)('halls/:id/matrix'),

@@ -17,7 +17,30 @@ let MovieService = class MovieService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async autoUpdateMovieStatuses() {
+        const now = new Date();
+        await this.prisma.movie.updateMany({
+            where: {
+                status: client_1.MovieStatus.COMING_SOON,
+                releaseDate: { lte: now },
+            },
+            data: {
+                status: client_1.MovieStatus.NOW_SHOWING,
+            },
+        });
+    }
     async create(createMovieDto) {
+        const releaseDate = new Date(createMovieDto.releaseDate);
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        if (releaseDate < startOfToday) {
+            throw new common_1.BadRequestException('Ngày khởi chiếu không được ở trong quá khứ');
+        }
+        const now = new Date();
+        let status = createMovieDto.status;
+        if (!status) {
+            status = releaseDate <= now ? client_1.MovieStatus.NOW_SHOWING : client_1.MovieStatus.COMING_SOON;
+        }
         return this.prisma.movie.create({
             data: {
                 title: createMovieDto.title,
@@ -26,17 +49,18 @@ let MovieService = class MovieService {
                 cast: createMovieDto.cast,
                 genres: createMovieDto.genres || [],
                 durationMinutes: createMovieDto.durationMinutes,
-                releaseDate: new Date(createMovieDto.releaseDate),
+                releaseDate,
                 posterUrl: createMovieDto.posterUrl,
                 trailerUrl: createMovieDto.trailerUrl,
                 ageRating: createMovieDto.ageRating,
                 languageType: createMovieDto.languageType || 'SUB',
-                status: createMovieDto.status || client_1.MovieStatus.NOW_SHOWING,
+                status,
                 description: createMovieDto.description,
             },
         });
     }
     async findAll(status, genre, search) {
+        await this.autoUpdateMovieStatuses();
         return this.prisma.movie.findMany({
             where: {
                 ...(status && { status }),
@@ -53,6 +77,7 @@ let MovieService = class MovieService {
         });
     }
     async findOne(id) {
+        await this.autoUpdateMovieStatuses();
         const movie = await this.prisma.movie.findUnique({
             where: { id },
             include: {
@@ -80,6 +105,14 @@ let MovieService = class MovieService {
     }
     async update(id, updateMovieDto) {
         await this.findOne(id);
+        if (updateMovieDto.releaseDate) {
+            const releaseDate = new Date(updateMovieDto.releaseDate);
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+            if (releaseDate < startOfToday) {
+                throw new common_1.BadRequestException('Ngày khởi chiếu không được ở trong quá khứ');
+            }
+        }
         return this.prisma.movie.update({
             where: { id },
             data: {

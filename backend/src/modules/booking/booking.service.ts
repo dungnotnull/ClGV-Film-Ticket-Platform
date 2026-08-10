@@ -25,10 +25,39 @@ export class BookingService {
    * Giữ ghế tạm thời trong 10 phút (Redis Redlock Tier 1)
    */
   async holdSeats(userId: string, dto: HoldSeatDto) {
-    const { showtimeId, seatIds } = dto;
+    const showtimeId = dto.showtimeId;
+    const seatIds = dto.seatIds || [];
+
+    if (!showtimeId || seatIds.length === 0) {
+      throw new BadRequestException('Vui lòng cung cấp showtimeId và danh sách seatIds');
+    }
+
     const showtime = await this.prisma.showtime.findUnique({ where: { id: showtimeId } });
     if (!showtime) {
       throw new NotFoundException(`Không tìm thấy suất chiếu ID: ${showtimeId}`);
+    }
+
+    // Sửa Bug 6: Kiểm tra trạng thái ghế thực tế từ Database PostgreSQL trước khi giữ
+    const existingSeats = (await this.prisma.showtimeSeat.findMany({
+      where: {
+        showtimeId,
+        seatId: { in: seatIds },
+      },
+    })) || [];
+
+    for (const seat of existingSeats) {
+      if (seat.status === 'SOLD') {
+        throw new ConflictException({
+          code: 'SEAT_ALREADY_SOLD',
+          message: `Ghế ${seat.seatId} đã được mua thành công trước đó, không thể chọn lại`,
+        });
+      }
+      if (seat.status === 'BLOCKED') {
+        throw new ConflictException({
+          code: 'SEAT_BLOCKED',
+          message: `Ghế ${seat.seatId} hiện đang bị tạm khóa`,
+        });
+      }
     }
 
     const lockedSeats: string[] = [];
@@ -67,13 +96,15 @@ export class BookingService {
   }
 
   /**
-   * Hủy giữ ghế tạm thời
+   * Hủy giữ ghế tạm thời (Yêu cầu 5: Xóa lock trên Redis và broadcast Socket.io)
    */
   async releaseSeats(userId: string, dto: HoldSeatDto) {
-    const { showtimeId, seatIds } = dto;
-    for (const seatId of seatIds) {
-      await this.redisService.releaseSeatLock(showtimeId, seatId);
-      this.websocketGateway.broadcastSeatState(showtimeId, seatId, 'AVAILABLE', null, null);
+    const { showtimeId, seatIds = [] } = dto;
+    if (showtimeId && seatIds.length > 0) {
+      for (const seatId of seatIds) {
+        await this.redisService.releaseSeatLock(showtimeId, seatId);
+        this.websocketGateway.broadcastSeatState(showtimeId, seatId, 'AVAILABLE', null, null);
+      }
     }
     return { success: true, releasedSeats: seatIds };
   }
@@ -112,10 +143,10 @@ export class BookingService {
         }
       }
 
-      // 3. Tính tiền vé
+      // 3. Tính tiền vé theo loại ghế
       let ticketTotal = 0;
       seats.forEach((seat) => {
-        const price = Math.round(showtime.basePrice * seat.priceModifier);
+        const price = Math.round(showtime.basePrice * (seat.priceModifier || 1.0));
         ticketTotal += price;
       });
 
@@ -177,7 +208,7 @@ export class BookingService {
       // Đảm bảo số tiền sau giảm giá không nhỏ hơn 0
       const finalAmount = Math.max(0, grandTotal - discountAmount);
 
-      // 7. Xử lý thanh toán
+      // 7. Xử lý thanh toán (Hỗ trợ CGV_CARD, VNPAY và VIETQR)
       let bookingStatus: 'PENDING_PAYMENT' | 'PAID' = 'PENDING_PAYMENT';
       let paymentUrl: string | undefined = undefined;
 
@@ -202,6 +233,11 @@ export class BookingService {
           },
         });
         bookingStatus = 'PAID';
+      } else if (paymentMethod === 'VIETQR') {
+        const bankId = '970423';
+        const accountNo = '1234567890';
+        const accountName = 'CLGV FILM TICKET PLATFORM';
+        paymentUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${finalAmount}&accountName=${encodeURIComponent(accountName)}`;
       } else {
         // MOCK VNPAY Sandbox URL
         const mockHost = this.configService.get<string>('MOCK_VNPAY_HOST', 'http://localhost:4000');
@@ -227,15 +263,23 @@ export class BookingService {
         },
       });
 
-      if (paymentUrl) {
+      // 10. Cập nhật lại Payment URL chính xác với booking.id
+      if (paymentMethod === 'VNPAY' && paymentUrl) {
         paymentUrl = paymentUrl.replace('TEMP', booking.id);
+        await tx.booking.update({
+          where: { id: booking.id },
+          data: { paymentUrl },
+        });
+      } else if (paymentMethod === 'VIETQR' && paymentUrl) {
+        const addInfo = `CLGV_${booking.id.substring(0, 8)}`;
+        paymentUrl = `${paymentUrl}&addInfo=${encodeURIComponent(addInfo)}`;
         await tx.booking.update({
           where: { id: booking.id },
           data: { paymentUrl },
         });
       }
 
-      // 10. Tạo các dòng Combo trong đơn
+      // 11. Tạo thông tin Chi tiết Bắp nước (BookingCombo)
       if (comboRecordsToInsert.length > 0) {
         await tx.bookingCombo.createMany({
           data: comboRecordsToInsert.map((c) => ({
@@ -247,69 +291,65 @@ export class BookingService {
         });
       }
 
-      // 11. Tạo Mã vé & Token Mã hóa QR HMAC-SHA256
-      const hmacSecret = this.configService.get<string>('TICKET_HMAC_SECRET', 'clgv-ticket-secret-key-2026');
-      const ticketRecords: { ticketId: string; seatId: string; qrToken: string }[] = [];
+      // 12. Tạo Vé điện tử & QR Ticket Token (HMAC-SHA256)
+      const hmacSecret = this.configService.get<string>('TICKET_HMAC_SECRET', 'clgv_hmac_qr_secret_key_2026');
+      const ticketRecordsToInsert = seatIds.map((seatId) => {
+        const payload = `${booking.id}:${userId}:${showtimeId}:${seatId}:${Date.now()}`;
+        const signature = crypto.createHmac('sha256', hmacSecret).update(payload).digest('hex');
+        const qrToken = Buffer.from(JSON.stringify({ payload, signature })).toString('base64url');
 
-      for (const seatId of seatIds) {
-        const ticketId = `tkt_${Math.random().toString(36).substring(2, 10)}`;
-        const payload = {
-          ticketId,
-          showtimeId,
-          cinemaId: showtime.cinemaId,
-          hallId: showtime.hallId,
+        return {
+          bookingId: booking.id,
           seatId,
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(new Date(showtime.endTime).getTime() / 1000),
+          qrToken,
+          status: bookingStatus === 'PAID' ? ('UNUSED' as const) : ('UNUSED' as const),
         };
-        const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
-        const signature = crypto.createHmac('sha256', hmacSecret).update(payloadBase64).digest('base64url');
-        const qrToken = `TKT.${payloadBase64}.${signature}`;
+      });
 
-        await tx.ticket.create({
-          data: {
-            id: ticketId,
-            bookingId: booking.id,
-            seatId,
-            qrToken,
-            status: 'UNUSED',
-          },
-        });
+      await tx.ticket.createMany({
+        data: ticketRecordsToInsert,
+      });
 
-        ticketRecords.push({ ticketId, seatId, qrToken });
-      }
-
-      // 12. Cập nhật trạng thái ghế nếu đã thanh toán bằng CGV_CARD
+      // 13. Nếu thanh toán ngay bằng CGV_CARD: Chuyển ghế sang SOLD & giải phóng Redis lock
       if (bookingStatus === 'PAID') {
         await tx.showtimeSeat.updateMany({
           where: { showtimeId, seatId: { in: seatIds } },
           data: { status: 'SOLD' },
         });
 
-        // Tích điểm thưởng cho user
-        await tx.user.update({
-          where: { id: userId },
-          data: { points: { increment: pointsEarned } },
-        });
-
-        // Broadcast WebSocket
-        seatIds.forEach((seatId) => {
-          this.redisService.releaseSeatLock(showtimeId, seatId);
+        // Xóa lock Redis & broadcast trạng thái SOLD
+        for (const seatId of seatIds) {
+          await this.redisService.releaseSeatLock(showtimeId, seatId);
           this.websocketGateway.broadcastSeatState(showtimeId, seatId, 'SOLD');
-        });
+        }
       }
-
-      const paymentQrPayload = `00020101021238540010A000000727012400069704230110${booking.id}53037045406${finalAmount}5802VN5904CLGV6007HANOI62190815${booking.id}63041D9C`;
 
       return {
         bookingId: booking.id,
+        status: bookingStatus,
         totalAmount: finalAmount,
         discountAmount,
-        status: booking.status,
+        pointsEarned,
+        paymentMethod,
         paymentUrl,
-        paymentQrPayload,
-        tickets: ticketRecords,
       };
+    });
+  }
+
+  /**
+   * Lấy lịch sử đặt vé cá nhân
+   */
+  async getUserBookings(userId: string) {
+    return this.prisma.booking.findMany({
+      where: { userId },
+      include: {
+        showtime: {
+          include: { movie: true, cinema: true, hall: true },
+        },
+        tickets: true,
+        combos: { include: { combo: true } },
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }

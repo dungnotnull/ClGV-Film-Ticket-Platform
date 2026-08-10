@@ -1,11 +1,30 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RedisService } from '../redis/redis.service';
 import { CreateShowtimeDto } from './dto/create-showtime.dto';
 import { SeatStatus } from '@prisma/client';
 
+/**
+ * Định nghĩa hệ số nhân giá theo từng loại ghế (SeatType dynamic pricing)
+ * - STANDARD: 1.0 (Giá gốc suất chiếu)
+ * - VIP: 1.2 (+20% phụ thu ghế VIP)
+ * - COUPLE: 2.0 (Hệ số 2.0 cho ghế đôi Sweetbox)
+ * - ACCESSIBLE: 1.0 (Bằng giá chuẩn)
+ */
+export const SEAT_TYPE_PRICE_MODIFIERS: Record<string, number> = {
+  STANDARD: 1.0,
+  VIP: 1.2,
+  COUPLE: 2.0,
+  ACCESSIBLE: 1.0,
+  EMPTY_SPACE: 0.0,
+};
+
 @Injectable()
 export class ShowtimeService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   // Admin tạo suất chiếu mới kèm kiểm tra trùng lặp lịch (Conflict Detection Engine)
   async create(createShowtimeDto: CreateShowtimeDto) {
@@ -67,6 +86,9 @@ export class ShowtimeService {
         if (Array.isArray(row)) {
           for (const seat of row) {
             if (seat && seat.type !== 'EMPTY_SPACE') {
+              const defaultModifier = SEAT_TYPE_PRICE_MODIFIERS[seat.type] || 1.0;
+              const priceModifier = seat.priceModifier && seat.priceModifier !== 1.0 ? seat.priceModifier : defaultModifier;
+
               seatsToCreate.push({
                 showtimeId: showtime.id,
                 seatId: seat.id,
@@ -74,7 +96,7 @@ export class ShowtimeService {
                 col: seat.col,
                 type: seat.type,
                 status: seat.isBlocked ? SeatStatus.BLOCKED : SeatStatus.AVAILABLE,
-                priceModifier: seat.priceModifier || 1.0,
+                priceModifier,
               });
             }
           }
@@ -121,7 +143,7 @@ export class ShowtimeService {
     });
   }
 
-  // Lấy sơ đồ ghế và trạng thái thời gian thực của 1 suất chiếu
+  // Lấy sơ đồ ghế và trạng thái thời gian thực của 1 suất chiếu (Đồng bộ với Redis Redlock)
   async getShowtimeSeats(showtimeId: string) {
     const showtime = await this.prisma.showtime.findUnique({
       where: { id: showtimeId },
@@ -142,6 +164,40 @@ export class ShowtimeService {
       });
     }
 
-    return showtime;
+    // Đồng bộ trạng thái khoá ghế Redis và tính toán mức giá cụ thể theo loại ghế
+    const seatsWithPriceAndLock = await Promise.all(
+      showtime.seats.map(async (seat) => {
+        const modifier =
+          seat.priceModifier && seat.priceModifier !== 1.0
+            ? seat.priceModifier
+            : SEAT_TYPE_PRICE_MODIFIERS[seat.type] || 1.0;
+        const calculatedPrice = Math.round(showtime.basePrice * modifier);
+
+        let currentStatus = seat.status;
+        let heldByUserId: string | null = seat.heldByUserId || null;
+
+        // Nếu DB hiển thị AVAILABLE, kiểm tra xem có ai đang giữ tạm thời ở Redis không
+        if (seat.status === SeatStatus.AVAILABLE) {
+          const lockHolder = await this.redisService.getSeatLockHolder(showtimeId, seat.seatId);
+          if (lockHolder) {
+            currentStatus = SeatStatus.HOLDING;
+            heldByUserId = lockHolder;
+          }
+        }
+
+        return {
+          ...seat,
+          status: currentStatus,
+          heldByUserId,
+          priceModifier: modifier,
+          price: calculatedPrice,
+        };
+      }),
+    );
+
+    return {
+      ...showtime,
+      seats: seatsWithPriceAndLock,
+    };
   }
 }
