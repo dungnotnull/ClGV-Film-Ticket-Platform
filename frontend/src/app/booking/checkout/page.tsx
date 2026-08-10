@@ -53,21 +53,61 @@ export default function CheckoutPage() {
   }, [isAuthenticated, selectedSeats, reservationId, router]);
 
   useEffect(() => {
+    if (isProcessing) return;
+
+    // 1. Browser Reload/Close Tab Prompt
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      e.returnValue = ''; // Required for Chrome
-      
-      // Use Beacon API to reliably send the release-seat request when tab closes
+      e.returnValue = '';
+      return '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // 2. Actually left the page (closed tab or reloaded) - send beacon
+    const handleUnload = () => {
       if (reservationId && accessToken) {
         const url = 'http://localhost:4000/api/v1/bookings/release-seat';
         const body = JSON.stringify({ reservationId });
         navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
       }
     };
+    window.addEventListener('unload', handleUnload);
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [reservationId, accessToken]);
+    // 3. Client-side link clicks (Header navigation, etc)
+    const handleClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('a');
+      if (target && target.href && target.target !== '_blank') {
+        const url = new URL(target.href);
+        if (url.origin === window.location.origin && url.pathname !== window.location.pathname) {
+          e.preventDefault();
+          e.stopPropagation();
+          setExitAction(() => () => {
+            window.location.href = target.href;
+          });
+          setShowExitPrompt(true);
+        }
+      }
+    };
+    document.addEventListener('click', handleClick, { capture: true });
+
+    // 4. Back button interception
+    window.history.pushState(null, '', window.location.href);
+    const handlePopState = () => {
+      setShowExitPrompt(true);
+      setExitAction(() => () => {
+        window.history.go(-2); 
+      });
+      window.history.pushState(null, '', window.location.href);
+    };
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('unload', handleUnload);
+      document.removeEventListener('click', handleClick, { capture: true });
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [reservationId, accessToken, isProcessing]);
 
   const handleCheckout = async () => {
     setIsProcessing(true);
@@ -112,21 +152,6 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleCancelBooking = async () => {
-    try {
-      await axios.post(
-        'http://localhost:4000/api/v1/bookings/release-seat',
-        { reservationId },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      toast.info('Đã hủy giữ ghế.');
-      resetBooking();
-      router.push('/booking/showtimes');
-    } catch (error) {
-      console.error(error);
-      toast.error('Có lỗi xảy ra khi hủy giữ ghế.');
-    }
-  };
 
   const seatsTotal = selectedSeats.reduce((acc, seat) => acc + seat.price, 0);
   const combosTotal = combos.reduce((acc, combo) => acc + combo.price * combo.quantity, 0);
@@ -147,7 +172,7 @@ export default function CheckoutPage() {
             <h1 className="text-3xl font-bold text-primary">Thanh Toán</h1>
           </div>
           <Button variant="destructive" className="border-destructive text-white hover:bg-destructive/90" onClick={() => {
-            setExitAction(() => handleCancelBooking);
+            setExitAction(() => () => router.push('/booking/showtimes'));
             setShowExitPrompt(true);
           }}>
             Hủy Đặt Vé

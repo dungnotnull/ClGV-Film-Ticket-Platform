@@ -34,7 +34,7 @@ function SeatsContent() {
     setShowtime, 
     setReservation 
   } = useBookingStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
     if (!showtimeId) {

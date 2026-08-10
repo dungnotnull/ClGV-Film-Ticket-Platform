@@ -30,6 +30,7 @@ export default function FBAndVoucherPage() {
   const [walletVouchers, setWalletVouchers] = useState<any[]>([]);
   const [voucherCode, setVoucherCode] = useState('');
   const [timeLeft, setTimeLeft] = useState<string>('10:00');
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     if (selectedSeats.length === 0 || !reservationId) {
@@ -57,6 +58,10 @@ export default function FBAndVoucherPage() {
 
     return () => clearInterval(timer);
   }, [selectedSeats, reservationId, expiresAt, router]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     // Fetch Combos
@@ -103,6 +108,8 @@ export default function FBAndVoucherPage() {
     }
     router.push('/booking/checkout');
   };
+
+  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen bg-background pb-32">
