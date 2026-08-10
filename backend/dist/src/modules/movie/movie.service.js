@@ -19,15 +19,27 @@ let MovieService = class MovieService {
     }
     async autoUpdateMovieStatuses() {
         const now = new Date();
-        await this.prisma.movie.updateMany({
+        const moviesWithShowtimes = await this.prisma.movie.findMany({
             where: {
                 status: client_1.MovieStatus.COMING_SOON,
-                releaseDate: { lte: now },
+                showtimes: {
+                    some: {
+                        startTime: { lte: now },
+                    },
+                },
             },
-            data: {
-                status: client_1.MovieStatus.NOW_SHOWING,
-            },
+            select: { id: true },
         });
+        if (moviesWithShowtimes.length > 0) {
+            await this.prisma.movie.updateMany({
+                where: {
+                    id: { in: moviesWithShowtimes.map((m) => m.id) },
+                },
+                data: {
+                    status: client_1.MovieStatus.NOW_SHOWING,
+                },
+            });
+        }
     }
     async create(createMovieDto) {
         const releaseDate = new Date(createMovieDto.releaseDate);
@@ -36,11 +48,7 @@ let MovieService = class MovieService {
         if (releaseDate < startOfToday) {
             throw new common_1.BadRequestException('Ngày khởi chiếu không được ở trong quá khứ');
         }
-        const now = new Date();
-        let status = createMovieDto.status;
-        if (!status) {
-            status = releaseDate <= now ? client_1.MovieStatus.NOW_SHOWING : client_1.MovieStatus.COMING_SOON;
-        }
+        const status = createMovieDto.status || client_1.MovieStatus.COMING_SOON;
         return this.prisma.movie.create({
             data: {
                 title: createMovieDto.title,
@@ -85,7 +93,7 @@ let MovieService = class MovieService {
                     where: { startTime: { gte: new Date() } },
                     include: {
                         cinema: true,
-                        hall: { select: { id: true, name: true, screenType: true } },
+                        hall: { select: { id: true, name: true, screenType: true, roomMatrix: true } },
                     },
                     orderBy: { startTime: 'asc' },
                 },

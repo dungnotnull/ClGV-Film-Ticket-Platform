@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { CreateShowtimeDto } from './dto/create-showtime.dto';
-import { SeatStatus } from '@prisma/client';
+import { SeatStatus, MovieStatus } from '@prisma/client';
 
 /**
  * Định nghĩa hệ số nhân giá theo từng loại ghế (SeatType dynamic pricing)
@@ -24,18 +24,28 @@ export class ShowtimeService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redisService: RedisService,
-  ) {}
+  ) { }
 
-  // Admin tạo suất chiếu mới kèm kiểm tra trùng lặp lịch (Conflict Detection Engine)
+  // Admin tạo suất chiếu mới kèm kiểm tra trùng lặp lịch (Conflict Detection Engine) và validation thời gian
   async create(createShowtimeDto: CreateShowtimeDto) {
     const startTime = new Date(createShowtimeDto.startTime);
     const endTime = new Date(createShowtimeDto.endTime);
+    const now = new Date();
 
-    // Thêm 30 phút khoảng nghỉ và dọn dẹp vệ sinh giữa các suất chiếu trong cùng phòng
+    // 1. Validation chặn tạo suất chiếu trong quá khứ
+    if (startTime < now) {
+      throw new BadRequestException('Thời gian bắt đầu suất chiếu không được ở trong quá khứ');
+    }
+
+    if (endTime <= startTime) {
+      throw new BadRequestException('Thời gian kết thúc phải sau thời gian bắt đầu suất chiếu');
+    }
+
+    // 2. Thêm 30 phút khoảng nghỉ và dọn dẹp vệ sinh giữa các suất chiếu trong cùng phòng
     const bufferedStartTime = new Date(startTime.getTime() - 30 * 60 * 1000);
     const bufferedEndTime = new Date(endTime.getTime() + 30 * 60 * 1000);
 
-    // Kiểm tra xung đột lịch chiếu trong cùng phòng chiếu
+    // 3. Kiểm tra xung đột lịch chiếu trong cùng phòng chiếu
     const conflictingShowtimes = await this.prisma.showtime.findMany({
       where: {
         hallId: createShowtimeDto.hallId,
@@ -77,6 +87,14 @@ export class ShowtimeService {
         basePrice: createShowtimeDto.basePrice,
       },
     });
+
+    // Nhiệm vụ 1: Tự động chuyển trạng thái phim từ COMING_SOON sang NOW_SHOWING khi được lên lịch chiếu
+    if (startTime <= now) {
+      await this.prisma.movie.updateMany({
+        where: { id: createShowtimeDto.movieId, status: MovieStatus.COMING_SOON },
+        data: { status: MovieStatus.NOW_SHOWING },
+      });
+    }
 
     // Tự động khởi tạo sơ đồ các ghế trong suất chiếu dựa trên RoomMatrix của Hall
     const matrix = hall.roomMatrix as any;
@@ -137,7 +155,7 @@ export class ShowtimeService {
       include: {
         movie: { select: { id: true, title: true, durationMinutes: true, posterUrl: true, ageRating: true } },
         cinema: { select: { id: true, name: true, address: true } },
-        hall: { select: { id: true, name: true, screenType: true } },
+        hall: { select: { id: true, name: true, screenType: true, roomMatrix: true } },
       },
       orderBy: { startTime: 'asc' },
     });
@@ -150,7 +168,7 @@ export class ShowtimeService {
       include: {
         movie: { select: { title: true } },
         cinema: { select: { name: true } },
-        hall: { select: { name: true, screenType: true } },
+        hall: { select: { name: true, screenType: true, roomMatrix: true } }, // Nhiệm vụ 2: Bổ sung roomMatrix: true
         seats: {
           orderBy: [{ row: 'asc' }, { col: 'asc' }],
         },

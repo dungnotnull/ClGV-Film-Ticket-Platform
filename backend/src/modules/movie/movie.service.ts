@@ -10,38 +10,47 @@ export class MovieService {
 
   /**
    * Tự động quét và chuyển đổi trạng thái phim từ COMING_SOON (Sắp chiếu)
-   * sang NOW_SHOWING (Đang chiếu) nếu ngày khởi chiếu <= thời điểm hiện tại.
+   * sang NOW_SHOWING (Đang chiếu) dựa trên việc phim đã được lên lịch chiếu (Showtime startTime <= now).
    */
   async autoUpdateMovieStatuses() {
     const now = new Date();
-    await this.prisma.movie.updateMany({
+    const moviesWithShowtimes = await this.prisma.movie.findMany({
       where: {
         status: MovieStatus.COMING_SOON,
-        releaseDate: { lte: now },
+        showtimes: {
+          some: {
+            startTime: { lte: now },
+          },
+        },
       },
-      data: {
-        status: MovieStatus.NOW_SHOWING,
-      },
+      select: { id: true },
     });
+
+    if (moviesWithShowtimes.length > 0) {
+      await this.prisma.movie.updateMany({
+        where: {
+          id: { in: moviesWithShowtimes.map((m) => m.id) },
+        },
+        data: {
+          status: MovieStatus.NOW_SHOWING,
+        },
+      });
+    }
   }
 
-  // Admin tạo phim mới (mặc định trạng thái COMING_SOON nếu trong tương lai)
+  // Admin tạo phim mới (Mặc định trạng thái COMING_SOON)
   async create(createMovieDto: CreateMovieDto) {
     const releaseDate = new Date(createMovieDto.releaseDate);
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
-    // Yêu cầu 3: Không cho phép chọn ngày/giờ khởi chiếu trong quá khứ
+    // Không cho phép chọn ngày/giờ khởi chiếu trong quá khứ
     if (releaseDate < startOfToday) {
       throw new BadRequestException('Ngày khởi chiếu không được ở trong quá khứ');
     }
 
-    const now = new Date();
-    // Yêu cầu 1 & 2: Nếu tạo phim có releaseDate trong tương lai thì mặc định COMING_SOON
-    let status = createMovieDto.status;
-    if (!status) {
-      status = releaseDate <= now ? MovieStatus.NOW_SHOWING : MovieStatus.COMING_SOON;
-    }
+    // Mặc định trạng thái khi tạo phim mới luôn là COMING_SOON (trừ khi có truyền status cụ thể)
+    const status = createMovieDto.status || MovieStatus.COMING_SOON;
 
     return this.prisma.movie.create({
       data: {
@@ -93,7 +102,7 @@ export class MovieService {
           where: { startTime: { gte: new Date() } },
           include: {
             cinema: true,
-            hall: { select: { id: true, name: true, screenType: true } },
+            hall: { select: { id: true, name: true, screenType: true, roomMatrix: true } },
           },
           orderBy: { startTime: 'asc' },
         },

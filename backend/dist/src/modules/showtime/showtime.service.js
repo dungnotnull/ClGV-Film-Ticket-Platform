@@ -29,6 +29,13 @@ let ShowtimeService = class ShowtimeService {
     async create(createShowtimeDto) {
         const startTime = new Date(createShowtimeDto.startTime);
         const endTime = new Date(createShowtimeDto.endTime);
+        const now = new Date();
+        if (startTime < now) {
+            throw new common_1.BadRequestException('Thời gian bắt đầu suất chiếu không được ở trong quá khứ');
+        }
+        if (endTime <= startTime) {
+            throw new common_1.BadRequestException('Thời gian kết thúc phải sau thời gian bắt đầu suất chiếu');
+        }
         const bufferedStartTime = new Date(startTime.getTime() - 30 * 60 * 1000);
         const bufferedEndTime = new Date(endTime.getTime() + 30 * 60 * 1000);
         const conflictingShowtimes = await this.prisma.showtime.findMany({
@@ -67,6 +74,12 @@ let ShowtimeService = class ShowtimeService {
                 basePrice: createShowtimeDto.basePrice,
             },
         });
+        if (startTime <= now) {
+            await this.prisma.movie.updateMany({
+                where: { id: createShowtimeDto.movieId, status: client_1.MovieStatus.COMING_SOON },
+                data: { status: client_1.MovieStatus.NOW_SHOWING },
+            });
+        }
         const matrix = hall.roomMatrix;
         if (matrix && matrix.grid && Array.isArray(matrix.grid)) {
             const seatsToCreate = [];
@@ -118,7 +131,7 @@ let ShowtimeService = class ShowtimeService {
             include: {
                 movie: { select: { id: true, title: true, durationMinutes: true, posterUrl: true, ageRating: true } },
                 cinema: { select: { id: true, name: true, address: true } },
-                hall: { select: { id: true, name: true, screenType: true } },
+                hall: { select: { id: true, name: true, screenType: true, roomMatrix: true } },
             },
             orderBy: { startTime: 'asc' },
         });
@@ -129,7 +142,7 @@ let ShowtimeService = class ShowtimeService {
             include: {
                 movie: { select: { title: true } },
                 cinema: { select: { name: true } },
-                hall: { select: { name: true, screenType: true } },
+                hall: { select: { name: true, screenType: true, roomMatrix: true } },
                 seats: {
                     orderBy: [{ row: 'asc' }, { col: 'asc' }],
                 },
