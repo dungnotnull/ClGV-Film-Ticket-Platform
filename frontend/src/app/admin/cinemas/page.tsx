@@ -137,7 +137,6 @@ export default function AdminCinemasPage() {
         }));
       } else {
         if (res.error?.code === 'DUPLICATE_HALL_NAME') {
-          setIsAddHallOpen(false);
           toast.error('Lỗi: Tên phòng chiếu đã tồn tại trong rạp này!');
         } else {
           toast.error('Có lỗi xảy ra');
@@ -146,7 +145,6 @@ export default function AdminCinemasPage() {
     } catch (error: any) {
       console.error('Failed to add hall', error);
       if (error.response?.data?.error?.code === 'DUPLICATE_HALL_NAME') {
-        setIsAddHallOpen(false);
         toast.error('Lỗi: Tên phòng chiếu đã tồn tại trong rạp này!');
       } else {
         toast.error('Lỗi kết nối Server');

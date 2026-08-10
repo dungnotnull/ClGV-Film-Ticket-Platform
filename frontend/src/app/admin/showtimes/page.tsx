@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '@/lib/axios';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Calendar, Clock, Film, Search } from 'lucide-react';
+import { Plus, Calendar, Clock, Film, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminShowtimesPage() {
@@ -17,6 +18,7 @@ export default function AdminShowtimesPage() {
   const [selectedCinemaHalls, setSelectedCinemaHalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [expandedMovies, setExpandedMovies] = useState<string[]>([]);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +57,14 @@ export default function AdminShowtimesPage() {
     fetchData();
   }, []);
 
+  const toggleExpand = (movieId: string) => {
+    setExpandedMovies(prev => 
+      prev.includes(movieId) 
+        ? prev.filter(id => id !== movieId)
+        : [...prev, movieId]
+    );
+  };
+
   // When cinema changes, update halls dropdown
   useEffect(() => {
     if (formData.cinemaId) {
@@ -89,10 +99,11 @@ export default function AdminShowtimesPage() {
         const existingStart = new Date(st.startTime).getTime();
         const existingEnd = new Date(st.endTime).getTime();
         
-        // Overlap condition: new starts before existing ends + 30m AND new ends + 30m > existing starts
         if (newStart < existingEnd + cleaningTime && newEnd + cleaningTime > existingStart) {
-           setIsAddOpen(false);
-           toast.error('Lỗi: Khoảng cách giữa các suất chiếu cùng phòng phải cách nhau ít nhất 30 phút để dọn dẹp!');
+           const title = st.movie?.title || 'Unknown';
+           const sTime = new Date(st.startTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit', hour12: false});
+           const eTime = new Date(st.endTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit', hour12: false});
+           toast.error(`Lỗi: Bị trùng lịch với phim "${title}" (${sTime} - ${eTime}). Vui lòng chọn giờ khác để đảm bảo khoảng nghỉ 30 phút dọn rạp!`, { duration: 6000 });
            return;
         }
       }
@@ -113,15 +124,13 @@ export default function AdminShowtimesPage() {
         fetchData();
       } else {
         if (res.error?.code === 'SHOWTIME_CONFLICT') {
-          setIsAddOpen(false);
-          toast.error('Xung đột lịch chiếu! Phòng chiếu này đã có phim khác trong khung giờ này.');
+          toast.error('Xung đột lịch chiếu! Vui lòng chọn giờ chiếu khác cách ít nhất 30 phút so với các suất chiếu hiện tại.');
         } else {
           toast.error('Có lỗi xảy ra');
         }
       }
     } catch (error: any) {
       if (error.response?.data?.error?.code === 'SHOWTIME_CONFLICT') {
-        setIsAddOpen(false);
         toast.error('Lỗi: Khoảng cách giữa các suất chiếu cùng phòng phải cách nhau ít nhất 30 phút để dọn dẹp!');
       } else {
         toast.error('Lỗi kết nối Server');
@@ -185,7 +194,19 @@ export default function AdminShowtimesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Giờ chiếu (HH:mm)</Label>
-                  <Input type="time" value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
+                  <Select value={formData.startTime} onValueChange={(val) => setFormData({...formData, startTime: val})}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Chọn giờ" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[250px]">
+                      {Array.from({ length: 24 * 12 }).map((_, i) => {
+                        const h = Math.floor(i / 12).toString().padStart(2, '0');
+                        const m = ((i % 12) * 5).toString().padStart(2, '0');
+                        const time = `${h}:${m}`;
+                        return <SelectItem key={time} value={time}>{time}</SelectItem>;
+                      })}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="space-y-2">
@@ -229,10 +250,7 @@ export default function AdminShowtimesPage() {
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead>Phim</TableHead>
-              <TableHead>Rạp / Phòng</TableHead>
-              <TableHead>Khởi chiếu</TableHead>
-              <TableHead>Giá vé</TableHead>
-              <TableHead>Tình trạng</TableHead>
+              <TableHead colSpan={4}>Thông tin suất chiếu</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -256,24 +274,70 @@ export default function AdminShowtimesPage() {
                 );
               }
 
-              return filtered.map((st: any) => (
-                <TableRow key={st.id}>
-                  <TableCell className="font-bold flex items-center gap-2">
-                    <Film className="w-4 h-4 text-primary" /> {st.movie?.title || 'Unknown'}
-                  </TableCell>
-                  <TableCell>
-                    {st.cinema?.name} <span className="text-muted-foreground text-xs block">{st.hall?.name}</span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(st.startTime).toLocaleDateString('vi-VN')}</div>
-                    <div className="flex items-center gap-1 text-primary text-xs font-bold mt-1"><Clock className="w-3 h-3" /> {new Date(st.startTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit', hour12: false})}</div>
-                  </TableCell>
-                  <TableCell>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(st.basePrice)}</TableCell>
-                  <TableCell>
-                    <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-500">Mở bán</span>
-                  </TableCell>
-                </TableRow>
-              ));
+              const groupedByMovie: Record<string, { movie: any, showtimes: any[] }> = {};
+              filtered.forEach(st => {
+                const movieId = st.movieId || 'unknown';
+                if (!groupedByMovie[movieId]) {
+                  groupedByMovie[movieId] = { movie: st.movie, showtimes: [] };
+                }
+                groupedByMovie[movieId].showtimes.push(st);
+              });
+
+              return Object.values(groupedByMovie).map(group => {
+                const isExpanded = expandedMovies.includes(group.movie?.id);
+                return (
+                  <React.Fragment key={group.movie?.id || Math.random()}>
+                    <TableRow 
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => toggleExpand(group.movie?.id)}
+                    >
+                      <TableCell className="font-bold flex items-center gap-2">
+                        {isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                        <Film className="w-4 h-4 text-primary" /> {group.movie?.title || 'Phim không xác định'}
+                      </TableCell>
+                      <TableCell colSpan={4} className="text-muted-foreground text-sm font-medium">
+                        {group.showtimes.length} suất chiếu
+                      </TableCell>
+                    </TableRow>
+                    
+                    {isExpanded && (
+                      <TableRow className="bg-card">
+                        <TableCell colSpan={5} className="p-0 border-b-0">
+                          <div className="p-4 bg-muted/10 shadow-inner rounded-b-lg border-x border-b border-border/50 mx-2 mb-2">
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="hover:bg-transparent">
+                                  <TableHead>Rạp / Phòng</TableHead>
+                                  <TableHead>Khởi chiếu</TableHead>
+                                  <TableHead>Giá vé</TableHead>
+                                  <TableHead>Tình trạng</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {group.showtimes.map(st => (
+                                  <TableRow key={st.id} className="bg-background">
+                                    <TableCell>
+                                      <span className="font-semibold">{st.cinema?.name}</span> <span className="text-muted-foreground text-xs block">{st.hall?.name}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(st.startTime).toLocaleDateString('vi-VN')}</div>
+                                      <div className="flex items-center gap-1 text-primary text-xs font-bold mt-1"><Clock className="w-3 h-3" /> {new Date(st.startTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit', hour12: false})}</div>
+                                    </TableCell>
+                                    <TableCell>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(st.basePrice)}</TableCell>
+                                    <TableCell>
+                                      <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-500">Mở bán</span>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                );
+              });
             })()}
           </TableBody>
         </Table>

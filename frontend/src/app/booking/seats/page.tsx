@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import io, { Socket } from 'socket.io-client';
 import { api } from '@/lib/axios';
 import { toast } from 'sonner';
 import { Clock, Monitor, ChevronRight, Armchair } from 'lucide-react';
@@ -24,7 +23,6 @@ function SeatsContent() {
   const showtimeId = searchParams.get('showtimeId');
   const router = useRouter();
 
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [matrix, setMatrix] = useState<any>(null);
   const [seats, setSeats] = useState<Record<string, Seat>>({});
   const [basePrice, setBasePrice] = useState(100000);
@@ -100,49 +98,42 @@ function SeatsContent() {
 
     fetchMatrix();
 
-    // Setup Socket.io
-    const newSocket = io('ws://localhost:4000', {
-      transports: ['websocket']
-    });
-
-    newSocket.on('connect', () => {
-      console.log('Connected to socket server');
-      newSocket.emit('join:showtime', { showtimeId });
-    });
-
-    newSocket.on('seat:state_changed', (payload: any) => {
-      if (payload.showtimeId === showtimeId) {
-        setSeats(prev => ({
-          ...prev,
-          [payload.seatId]: {
-            ...prev[payload.seatId],
-            status: payload.status
-          }
-        }));
-        
-        // If one of our selected seats is held by someone else, deselect it
-        if (payload.status !== 'AVAILABLE') {
-          const currentUser = useAuthStore.getState().user;
-          // Check if it's held by the current user
-          if (payload.heldByUserId === currentUser?.id) {
-            return; // Ignore if the current user is holding it
-          }
-
-          useBookingStore.setState((state) => {
-            if (state.selectedSeats.find(s => s.id === payload.seatId)) {
-              toast.warning(`Ghế ${payload.seatId} vừa bị đặt bởi người khác!`);
-              return { selectedSeats: state.selectedSeats.filter(s => s.id !== payload.seatId) };
-            }
-            return state;
+    // Polling every 5 seconds for real-time updates
+    const interval = setInterval(() => {
+      api.get(`/showtimes/${showtimeId}/seats`).then((res: any) => {
+        if (res.success && res.data.seats) {
+          setSeats(prevSeats => {
+            const newSeats = { ...prevSeats };
+            let stateChanged = false;
+            
+            res.data.seats.forEach((s: any) => {
+              if (newSeats[s.seatId] && newSeats[s.seatId].status !== s.status) {
+                newSeats[s.seatId] = { ...newSeats[s.seatId], status: s.status };
+                stateChanged = true;
+                
+                if (s.status !== 'AVAILABLE') {
+                  const currentUser = useAuthStore.getState().user;
+                  if (s.heldByUserId !== currentUser?.id) {
+                    useBookingStore.setState((state) => {
+                      if (state.selectedSeats.find(selected => selected.id === s.seatId)) {
+                        toast.warning(`Ghế ${s.seatId} vừa có người đặt hoặc giữ!`);
+                        return { selectedSeats: state.selectedSeats.filter(selected => selected.id !== s.seatId) };
+                      }
+                      return state;
+                    });
+                  }
+                }
+              }
+            });
+            
+            return stateChanged ? newSeats : prevSeats;
           });
         }
-      }
-    });
-
-    setSocket(newSocket);
+      }).catch(err => console.error("Polling error", err));
+    }, 5000);
 
     return () => {
-      newSocket.disconnect();
+      clearInterval(interval);
     };
   }, [showtimeId, router, setShowtime]);
 

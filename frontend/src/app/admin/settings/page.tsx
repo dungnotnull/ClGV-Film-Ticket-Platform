@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Oswald } from "next/font/google";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -122,26 +123,40 @@ export default function AdminSettingsPage() {
                   />
                   <p className="text-xs text-muted-foreground">Ví dụ: 7 ngày</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="openTime">Giờ mở cửa hệ thống</Label>
-                    <Input 
-                      id="openTime" 
-                      type="time" 
-                      value={openTime}
-                      onChange={(e) => setOpenTime(e.target.value)}
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Giờ mở cửa (HH:mm)</Label>
+                      <Select value={openTime} onValueChange={setOpenTime}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Giờ mở cửa" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[250px]">
+                          {Array.from({ length: 24 * 12 }).map((_, i) => {
+                            const h = Math.floor(i / 12).toString().padStart(2, '0');
+                            const m = ((i % 12) * 5).toString().padStart(2, '0');
+                            const time = `${h}:${m}`;
+                            return <SelectItem key={`open-${time}`} value={time}>{time}</SelectItem>;
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Giờ đóng cửa (HH:mm)</Label>
+                      <Select value={closeTime} onValueChange={setCloseTime}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Giờ đóng cửa" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[250px]">
+                          {Array.from({ length: 24 * 12 }).map((_, i) => {
+                            const h = Math.floor(i / 12).toString().padStart(2, '0');
+                            const m = ((i % 12) * 5).toString().padStart(2, '0');
+                            const time = `${h}:${m}`;
+                            return <SelectItem key={`close-${time}`} value={time}>{time}</SelectItem>;
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="closeTime">Giờ đóng cửa hệ thống</Label>
-                    <Input 
-                      id="closeTime" 
-                      type="time" 
-                      value={closeTime}
-                      onChange={(e) => setCloseTime(e.target.value)}
-                    />
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>

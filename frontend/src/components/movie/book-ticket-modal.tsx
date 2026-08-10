@@ -62,7 +62,7 @@ export function BookTicketModal({ movie }: { movie: any }) {
                               className="border-primary/50 hover:bg-primary hover:text-white transition-colors"
                               onClick={() => setOpen(false)}
                             >
-                              {new Date(st.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(st.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })}
                             </Button>
                           </Link>
                         ))}
