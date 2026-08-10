@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -40,6 +40,7 @@ export default function CheckoutPage() {
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [showExitPrompt, setShowExitPrompt] = useState(false);
   const [exitAction, setExitAction] = useState<(() => void) | null>(null);
+  const isConfirmedExitRef = useRef(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -57,6 +58,7 @@ export default function CheckoutPage() {
 
     // 1. Browser Reload/Close Tab Prompt
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isConfirmedExitRef.current) return;
       e.preventDefault();
       e.returnValue = '';
       return '';
@@ -65,9 +67,12 @@ export default function CheckoutPage() {
 
     // 2. Actually left the page (closed tab or reloaded) - send beacon
     const handleUnload = () => {
-      if (reservationId && accessToken) {
+      if (showtimeId && selectedSeats.length > 0 && accessToken) {
         const url = 'http://localhost:4000/api/v1/bookings/release-seat';
-        const body = JSON.stringify({ reservationId });
+        const body = JSON.stringify({ 
+          showtimeId, 
+          seatIds: selectedSeats.map(s => s.id) 
+        });
         navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
       }
     };
@@ -172,7 +177,10 @@ export default function CheckoutPage() {
             <h1 className="text-3xl font-bold text-primary">Thanh Toán</h1>
           </div>
           <Button variant="destructive" className="border-destructive text-white hover:bg-destructive/90" onClick={() => {
-            setExitAction(() => () => router.push('/booking/showtimes'));
+            setExitAction(() => () => {
+              isConfirmedExitRef.current = true;
+              router.push('/booking/showtimes');
+            });
             setShowExitPrompt(true);
           }}>
             Hủy Đặt Vé
@@ -371,11 +379,15 @@ export default function CheckoutPage() {
             <AlertDialogAction 
               className="bg-destructive hover:bg-destructive/90 text-white"
               onClick={async () => {
+                isConfirmedExitRef.current = true;
                 // Call release seat API before executing the exit action
                 try {
                   await axios.post(
                     'http://localhost:4000/api/v1/bookings/release-seat',
-                    { reservationId },
+                    { 
+                      showtimeId, 
+                      seatIds: selectedSeats.map(s => s.id) 
+                    },
                     { headers: { Authorization: `Bearer ${accessToken}` } }
                   );
                 } catch (e) {

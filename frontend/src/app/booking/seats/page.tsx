@@ -16,6 +16,8 @@ interface Seat {
   type: 'STANDARD' | 'VIP' | 'COUPLE' | 'BED';
   status: 'AVAILABLE' | 'HOLDING' | 'RESERVED' | 'SOLD' | 'BLOCKED';
   priceModifier: number;
+  price?: number;
+  heldByUserId?: string;
 }
 
 function SeatsContent() {
@@ -70,7 +72,13 @@ function SeatsContent() {
           if (data.seats && Array.isArray(data.seats)) {
             data.seats.forEach((s: any) => {
               if (seatMap[s.seatId]) {
-                seatMap[s.seatId].status = s.status;
+                seatMap[s.seatId] = {
+                  ...seatMap[s.seatId],
+                  status: s.status,
+                  priceModifier: s.priceModifier,
+                  price: s.price,
+                  heldByUserId: s.heldByUserId
+                };
               } else {
                 seatMap[s.seatId] = {
                   id: s.seatId,
@@ -78,7 +86,9 @@ function SeatsContent() {
                   col: s.col,
                   type: s.type,
                   status: s.status,
-                  priceModifier: s.priceModifier
+                  priceModifier: s.priceModifier,
+                  price: s.price,
+                  heldByUserId: s.heldByUserId
                 };
               }
             });
@@ -142,7 +152,7 @@ function SeatsContent() {
       return; // Cannot select unavailable seat
     }
 
-    const price = basePrice + (seat.priceModifier || 0);
+    const price = seat.price ? seat.price : Math.round(basePrice * (seat.priceModifier || 1.0));
     toggleSeat({
       id: seat.id,
       name: seat.id,
