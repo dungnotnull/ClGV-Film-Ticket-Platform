@@ -50,13 +50,13 @@ function SeatsContent() {
         const res: any = await api.get(`/showtimes/${showtimeId}/seats`);
         if (res.success) {
           const data = res.data;
-          setMatrix(data.matrix);
+          setMatrix(data.hall.roomMatrix);
           setBasePrice(data.basePrice || 100000);
           
           // Flatten seats for easy status lookup
           const seatMap: Record<string, Seat> = {};
-          if (data.matrix && data.matrix.grid) {
-            data.matrix.grid.forEach((row: any) => {
+          if (data.hall && data.hall.roomMatrix && data.hall.roomMatrix.grid) {
+            data.hall.roomMatrix.grid.forEach((row: any) => {
               // Note: row is an array of seat objects, not { rowLabel, seats }
               if (Array.isArray(row)) {
                 row.forEach((seat: any) => {
