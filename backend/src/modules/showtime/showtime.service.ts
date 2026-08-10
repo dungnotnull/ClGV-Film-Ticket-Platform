@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, BadRequestException }
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { CreateShowtimeDto } from './dto/create-showtime.dto';
-import { SeatStatus } from '@prisma/client';
+import { SeatStatus, MovieStatus } from '@prisma/client';
 
 /**
  * Định nghĩa hệ số nhân giá theo từng loại ghế (SeatType dynamic pricing)
@@ -88,6 +88,14 @@ export class ShowtimeService {
       },
     });
 
+    // Nhiệm vụ 1: Tự động chuyển trạng thái phim từ COMING_SOON sang NOW_SHOWING khi được lên lịch chiếu
+    if (startTime <= now) {
+      await this.prisma.movie.updateMany({
+        where: { id: createShowtimeDto.movieId, status: MovieStatus.COMING_SOON },
+        data: { status: MovieStatus.NOW_SHOWING },
+      });
+    }
+
     // Tự động khởi tạo sơ đồ các ghế trong suất chiếu dựa trên RoomMatrix của Hall
     const matrix = hall.roomMatrix as any;
     if (matrix && matrix.grid && Array.isArray(matrix.grid)) {
@@ -147,7 +155,7 @@ export class ShowtimeService {
       include: {
         movie: { select: { id: true, title: true, durationMinutes: true, posterUrl: true, ageRating: true } },
         cinema: { select: { id: true, name: true, address: true } },
-        hall: { select: { id: true, name: true, screenType: true } },
+        hall: { select: { id: true, name: true, screenType: true, roomMatrix: true } },
       },
       orderBy: { startTime: 'asc' },
     });
@@ -160,7 +168,7 @@ export class ShowtimeService {
       include: {
         movie: { select: { title: true } },
         cinema: { select: { name: true } },
-        hall: { select: { name: true, screenType: true } },
+        hall: { select: { name: true, screenType: true, roomMatrix: true } }, // Nhiệm vụ 2: Bổ sung roomMatrix: true
         seats: {
           orderBy: [{ row: 'asc' }, { col: 'asc' }],
         },

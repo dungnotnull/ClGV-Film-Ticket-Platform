@@ -72,6 +72,7 @@ export declare class MovieService {
                 id: string;
                 name: string;
                 screenType: import(".prisma/client").$Enums.ScreenType;
+                roomMatrix: import("@prisma/client/runtime/library").JsonValue;
             };
         } & {
             id: string;

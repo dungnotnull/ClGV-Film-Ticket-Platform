@@ -27,6 +27,7 @@ export declare class ShowtimeService {
             id: string;
             name: string;
             screenType: import(".prisma/client").$Enums.ScreenType;
+            roomMatrix: import("@prisma/client/runtime/library").JsonValue;
         };
         movie: {
             id: string;
@@ -68,6 +69,7 @@ export declare class ShowtimeService {
         hall: {
             name: string;
             screenType: import(".prisma/client").$Enums.ScreenType;
+            roomMatrix: import("@prisma/client/runtime/library").JsonValue;
         };
         movie: {
             title: string;

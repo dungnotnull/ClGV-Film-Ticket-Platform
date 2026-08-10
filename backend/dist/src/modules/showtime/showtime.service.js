@@ -74,6 +74,12 @@ let ShowtimeService = class ShowtimeService {
                 basePrice: createShowtimeDto.basePrice,
             },
         });
+        if (startTime <= now) {
+            await this.prisma.movie.updateMany({
+                where: { id: createShowtimeDto.movieId, status: client_1.MovieStatus.COMING_SOON },
+                data: { status: client_1.MovieStatus.NOW_SHOWING },
+            });
+        }
         const matrix = hall.roomMatrix;
         if (matrix && matrix.grid && Array.isArray(matrix.grid)) {
             const seatsToCreate = [];
@@ -125,7 +131,7 @@ let ShowtimeService = class ShowtimeService {
             include: {
                 movie: { select: { id: true, title: true, durationMinutes: true, posterUrl: true, ageRating: true } },
                 cinema: { select: { id: true, name: true, address: true } },
-                hall: { select: { id: true, name: true, screenType: true } },
+                hall: { select: { id: true, name: true, screenType: true, roomMatrix: true } },
             },
             orderBy: { startTime: 'asc' },
         });
@@ -136,7 +142,7 @@ let ShowtimeService = class ShowtimeService {
             include: {
                 movie: { select: { title: true } },
                 cinema: { select: { name: true } },
-                hall: { select: { name: true, screenType: true } },
+                hall: { select: { name: true, screenType: true, roomMatrix: true } },
                 seats: {
                     orderBy: [{ row: 'asc' }, { col: 'asc' }],
                 },
