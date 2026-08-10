@@ -24,7 +24,7 @@ export class ShowtimeService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redisService: RedisService,
-  ) {}
+  ) { }
 
   // Admin tạo suất chiếu mới kèm kiểm tra trùng lặp lịch (Conflict Detection Engine) và validation thời gian
   async create(createShowtimeDto: CreateShowtimeDto) {

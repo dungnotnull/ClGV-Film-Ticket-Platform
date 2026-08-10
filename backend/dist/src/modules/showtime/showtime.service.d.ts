@@ -8,16 +8,23 @@ export declare class ShowtimeService {
     constructor(prisma: PrismaService, redisService: RedisService);
     create(createShowtimeDto: CreateShowtimeDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        cinemaId: string;
         startTime: Date;
-        movieId: string;
-        hallId: string;
         endTime: Date;
         basePrice: number;
+        createdAt: Date;
+        updatedAt: Date;
+        movieId: string;
+        cinemaId: string;
+        hallId: string;
     }>;
     findAll(movieId?: string, cinemaId?: string, date?: string): Promise<({
+        movie: {
+            id: string;
+            title: string;
+            durationMinutes: number;
+            posterUrl: string;
+            ageRating: import(".prisma/client").$Enums.AgeRating;
+        };
         cinema: {
             id: string;
             name: string;
@@ -29,23 +36,16 @@ export declare class ShowtimeService {
             screenType: import(".prisma/client").$Enums.ScreenType;
             roomMatrix: import("@prisma/client/runtime/library").JsonValue;
         };
-        movie: {
-            id: string;
-            title: string;
-            durationMinutes: number;
-            posterUrl: string;
-            ageRating: import(".prisma/client").$Enums.AgeRating;
-        };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        cinemaId: string;
         startTime: Date;
-        movieId: string;
-        hallId: string;
         endTime: Date;
         basePrice: number;
+        createdAt: Date;
+        updatedAt: Date;
+        movieId: string;
+        cinemaId: string;
+        hallId: string;
     })[]>;
     getShowtimeSeats(showtimeId: string): Promise<{
         seats: {
@@ -56,13 +56,16 @@ export declare class ShowtimeService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.SeatType;
-            expiresAt: Date | null;
             col: number;
             row: string;
             showtimeId: string;
             seatId: string;
+            type: import(".prisma/client").$Enums.SeatType;
+            expiresAt: Date | null;
         }[];
+        movie: {
+            title: string;
+        };
         cinema: {
             name: string;
         };
@@ -71,17 +74,14 @@ export declare class ShowtimeService {
             screenType: import(".prisma/client").$Enums.ScreenType;
             roomMatrix: import("@prisma/client/runtime/library").JsonValue;
         };
-        movie: {
-            title: string;
-        };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        cinemaId: string;
         startTime: Date;
-        movieId: string;
-        hallId: string;
         endTime: Date;
         basePrice: number;
+        createdAt: Date;
+        updatedAt: Date;
+        movieId: string;
+        cinemaId: string;
+        hallId: string;
     }>;
 }
