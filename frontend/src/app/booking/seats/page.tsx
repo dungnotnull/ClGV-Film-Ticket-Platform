@@ -8,6 +8,7 @@ import { Clock, Monitor, ChevronRight, Armchair } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBookingStore } from '@/store/useBookingStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { io } from 'socket.io-client';
 
 interface Seat {
   id: string; // row + col e.g. A1
@@ -108,42 +109,42 @@ function SeatsContent() {
 
     fetchMatrix();
 
-    // Polling every 5 seconds for real-time updates
-    const interval = setInterval(() => {
-      api.get(`/showtimes/${showtimeId}/seats`).then((res: any) => {
-        if (res.success && res.data.seats) {
-          setSeats(prevSeats => {
-            const newSeats = { ...prevSeats };
-            let stateChanged = false;
-            
-            res.data.seats.forEach((s: any) => {
-              if (newSeats[s.seatId] && newSeats[s.seatId].status !== s.status) {
-                newSeats[s.seatId] = { ...newSeats[s.seatId], status: s.status };
-                stateChanged = true;
-                
-                if (s.status !== 'AVAILABLE') {
-                  const currentUser = useAuthStore.getState().user;
-                  if (s.heldByUserId !== currentUser?.id) {
-                    useBookingStore.setState((state) => {
-                      if (state.selectedSeats.find(selected => selected.id === s.seatId)) {
-                        toast.warning(`Ghế ${s.seatId} vừa có người đặt hoặc giữ!`);
-                        return { selectedSeats: state.selectedSeats.filter(selected => selected.id !== s.seatId) };
-                      }
-                      return state;
-                    });
-                  }
+    // Real-time updates via Socket.io
+    const socket = io('http://localhost:4000');
+    
+    socket.emit('join:showtime', { showtimeId });
+
+    socket.on('seat:state_changed', (data: any) => {
+      setSeats(prevSeats => {
+        const newSeats = { ...prevSeats };
+        
+        if (newSeats[data.seatId] && newSeats[data.seatId].status !== data.status) {
+          newSeats[data.seatId] = { 
+            ...newSeats[data.seatId], 
+            status: data.status,
+            heldByUserId: data.heldByUserId
+          };
+          
+          if (data.status !== 'AVAILABLE') {
+            const currentUser = useAuthStore.getState().user;
+            if (data.heldByUserId !== currentUser?.id) {
+              useBookingStore.setState((state) => {
+                if (state.selectedSeats.find(selected => selected.id === data.seatId)) {
+                  toast.warning(`Ghế ${data.seatId} vừa có người đặt hoặc giữ!`);
+                  return { selectedSeats: state.selectedSeats.filter(selected => selected.id !== data.seatId) };
                 }
-              }
-            });
-            
-            return stateChanged ? newSeats : prevSeats;
-          });
+                return state;
+              });
+            }
+          }
         }
-      }).catch(err => console.error("Polling error", err));
-    }, 5000);
+        
+        return newSeats;
+      });
+    });
 
     return () => {
-      clearInterval(interval);
+      socket.disconnect();
     };
   }, [showtimeId, router, setShowtime]);
 
