@@ -1,0 +1,1 @@
+const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); async function main() { try { const res = await prisma.user.groupBy({ by: ['membershipTier'], _count: { id: true } }); console.log('members', res); } catch (e) { console.error('ERROR members:', e.message); } finally { await prisma.$disconnect(); } } main();

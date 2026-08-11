@@ -7,11 +7,7 @@ export declare class MovieController {
     constructor(movieService: MovieService);
     findAll(status?: MovieStatus, genre?: string, search?: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string;
         title: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -22,32 +18,22 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
+        description: string;
+        createdAt: Date;
+        updatedAt: Date;
     }[]>;
     findOne(id: string): Promise<{
-        reviews: ({
-            user: {
-                id: string;
-                fullName: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            movieId: string;
-            rating: number;
-            comment: string;
-        })[];
         showtimes: ({
             cinema: {
                 id: string;
-                phone: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
-                cityId: string;
                 address: string;
+                phone: string | null;
                 amenities: string[];
+                cityId: string;
             };
             hall: {
                 id: string;
@@ -61,18 +47,28 @@ export declare class MovieController {
             updatedAt: Date;
             cinemaId: string;
             startTime: Date;
-            movieId: string;
-            hallId: string;
             endTime: Date;
             basePrice: number;
+            movieId: string;
+            hallId: string;
+        })[];
+        reviews: ({
+            user: {
+                id: string;
+                fullName: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            movieId: string;
+            userId: string;
+            rating: number;
+            comment: string;
         })[];
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string;
         title: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -83,14 +79,14 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
+        description: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     create(createMovieDto: CreateMovieDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string;
         title: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -101,14 +97,14 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
+        description: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     update(id: string, updateMovieDto: UpdateMovieDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string;
         title: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -119,14 +115,14 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
+        description: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     remove(id: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string;
         title: string;
-        status: import(".prisma/client").$Enums.MovieStatus;
         titleOriginal: string | null;
         director: string | null;
         cast: string | null;
@@ -137,5 +133,9 @@ export declare class MovieController {
         trailerUrl: string | null;
         ageRating: import(".prisma/client").$Enums.AgeRating;
         languageType: string;
+        status: import(".prisma/client").$Enums.MovieStatus;
+        description: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
 }

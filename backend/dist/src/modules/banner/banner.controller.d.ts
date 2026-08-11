@@ -5,42 +5,42 @@ export declare class BannerController {
     constructor(bannerService: BannerService);
     findActive(): Promise<{
         id: string;
+        title: string;
+        status: import(".prisma/client").$Enums.BannerStatus;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
-        displayOrder: number;
         imageUrl: string;
         linkUrl: string | null;
-        status: import(".prisma/client").$Enums.BannerStatus;
+        displayOrder: number;
     }[]>;
     findAll(): Promise<{
         id: string;
+        title: string;
+        status: import(".prisma/client").$Enums.BannerStatus;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
-        displayOrder: number;
         imageUrl: string;
         linkUrl: string | null;
-        status: import(".prisma/client").$Enums.BannerStatus;
+        displayOrder: number;
     }[]>;
     create(createBannerDto: CreateBannerDto): Promise<{
         id: string;
+        title: string;
+        status: import(".prisma/client").$Enums.BannerStatus;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
-        displayOrder: number;
         imageUrl: string;
         linkUrl: string | null;
-        status: import(".prisma/client").$Enums.BannerStatus;
+        displayOrder: number;
     }>;
     remove(id: string): Promise<{
         id: string;
+        title: string;
+        status: import(".prisma/client").$Enums.BannerStatus;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
-        displayOrder: number;
         imageUrl: string;
         linkUrl: string | null;
-        status: import(".prisma/client").$Enums.BannerStatus;
+        displayOrder: number;
     }>;
 }

@@ -12,16 +12,16 @@ export declare class JwtStrategy extends JwtStrategy_base {
         role: string;
     }): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        phone: string | null;
         email: string;
         fullName: string;
-        phone: string | null;
         role: import(".prisma/client").$Enums.Role;
         membershipTier: import(".prisma/client").$Enums.MembershipTier;
         points: number;
         cgvCardBalance: number;
         isU22Verified: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
 }
 export {};

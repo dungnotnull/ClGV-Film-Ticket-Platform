@@ -12,16 +12,16 @@ export declare class AuthService {
     register(registerDto: RegisterDto): Promise<{
         user: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string | null;
             email: string;
             fullName: string;
-            phone: string | null;
             role: import(".prisma/client").$Enums.Role;
             membershipTier: import(".prisma/client").$Enums.MembershipTier;
             points: number;
             cgvCardBalance: number;
             isU22Verified: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         accessToken: string;
         refreshToken: string;
@@ -29,16 +29,16 @@ export declare class AuthService {
     login(loginDto: LoginDto): Promise<{
         user: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            phone: string | null;
             email: string;
             fullName: string;
-            phone: string | null;
             role: import(".prisma/client").$Enums.Role;
             membershipTier: import(".prisma/client").$Enums.MembershipTier;
             points: number;
             cgvCardBalance: number;
             isU22Verified: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         accessToken: string;
         refreshToken: string;

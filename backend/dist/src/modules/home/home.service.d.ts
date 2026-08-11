@@ -5,22 +5,18 @@ export declare class HomeService {
     getHomePageData(cityId?: string): Promise<{
         banners: {
             id: string;
+            title: string;
+            status: import(".prisma/client").$Enums.BannerStatus;
             createdAt: Date;
             updatedAt: Date;
-            title: string;
-            displayOrder: number;
             imageUrl: string;
             linkUrl: string | null;
-            status: import(".prisma/client").$Enums.BannerStatus;
+            displayOrder: number;
         }[];
         movies: {
             nowShowing: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                description: string;
                 title: string;
-                status: import(".prisma/client").$Enums.MovieStatus;
                 titleOriginal: string | null;
                 director: string | null;
                 cast: string | null;
@@ -31,14 +27,14 @@ export declare class HomeService {
                 trailerUrl: string | null;
                 ageRating: import(".prisma/client").$Enums.AgeRating;
                 languageType: string;
+                status: import(".prisma/client").$Enums.MovieStatus;
+                description: string;
+                createdAt: Date;
+                updatedAt: Date;
             }[];
             comingSoon: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                description: string;
                 title: string;
-                status: import(".prisma/client").$Enums.MovieStatus;
                 titleOriginal: string | null;
                 director: string | null;
                 cast: string | null;
@@ -49,6 +45,10 @@ export declare class HomeService {
                 trailerUrl: string | null;
                 ageRating: import(".prisma/client").$Enums.AgeRating;
                 languageType: string;
+                status: import(".prisma/client").$Enums.MovieStatus;
+                description: string;
+                createdAt: Date;
+                updatedAt: Date;
             }[];
         };
         cities: {
@@ -63,8 +63,8 @@ export declare class HomeService {
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
-                code: string;
                 displayOrder: number;
+                code: string;
             };
             halls: {
                 id: string;
@@ -73,13 +73,13 @@ export declare class HomeService {
             }[];
         } & {
             id: string;
-            phone: string | null;
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            cityId: string;
             address: string;
+            phone: string | null;
             amenities: string[];
+            cityId: string;
         })[];
     }>;
 }

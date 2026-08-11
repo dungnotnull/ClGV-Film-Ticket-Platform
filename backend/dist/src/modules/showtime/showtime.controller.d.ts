@@ -4,6 +4,13 @@ export declare class ShowtimeController {
     private readonly showtimeService;
     constructor(showtimeService: ShowtimeService);
     findAll(movieId?: string, cinemaId?: string, date?: string): Promise<({
+        movie: {
+            id: string;
+            title: string;
+            durationMinutes: number;
+            posterUrl: string;
+            ageRating: import(".prisma/client").$Enums.AgeRating;
+        };
         cinema: {
             id: string;
             name: string;
@@ -15,23 +22,16 @@ export declare class ShowtimeController {
             screenType: import(".prisma/client").$Enums.ScreenType;
             roomMatrix: import("@prisma/client/runtime/library").JsonValue;
         };
-        movie: {
-            id: string;
-            title: string;
-            durationMinutes: number;
-            posterUrl: string;
-            ageRating: import(".prisma/client").$Enums.AgeRating;
-        };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         cinemaId: string;
         startTime: Date;
-        movieId: string;
-        hallId: string;
         endTime: Date;
         basePrice: number;
+        movieId: string;
+        hallId: string;
     })[]>;
     getShowtimeSeats(id: string): Promise<{
         seats: {
@@ -49,6 +49,9 @@ export declare class ShowtimeController {
             showtimeId: string;
             seatId: string;
         }[];
+        movie: {
+            title: string;
+        };
         cinema: {
             name: string;
         };
@@ -57,18 +60,15 @@ export declare class ShowtimeController {
             screenType: import(".prisma/client").$Enums.ScreenType;
             roomMatrix: import("@prisma/client/runtime/library").JsonValue;
         };
-        movie: {
-            title: string;
-        };
         id: string;
         createdAt: Date;
         updatedAt: Date;
         cinemaId: string;
         startTime: Date;
-        movieId: string;
-        hallId: string;
         endTime: Date;
         basePrice: number;
+        movieId: string;
+        hallId: string;
     }>;
     create(createShowtimeDto: CreateShowtimeDto): Promise<{
         id: string;
@@ -76,9 +76,9 @@ export declare class ShowtimeController {
         updatedAt: Date;
         cinemaId: string;
         startTime: Date;
-        movieId: string;
-        hallId: string;
         endTime: Date;
         basePrice: number;
+        movieId: string;
+        hallId: string;
     }>;
 }

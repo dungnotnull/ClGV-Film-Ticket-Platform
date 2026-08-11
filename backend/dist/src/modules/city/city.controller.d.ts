@@ -14,44 +14,44 @@ export declare class CityController {
     findOne(id: string): Promise<{
         cinemas: {
             id: string;
-            phone: string | null;
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            cityId: string;
             address: string;
+            phone: string | null;
             amenities: string[];
+            cityId: string;
         }[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        code: string;
         displayOrder: number;
+        code: string;
     }>;
     create(createCityDto: CreateCityDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        code: string;
         displayOrder: number;
+        code: string;
     }>;
     update(id: string, updateCityDto: UpdateCityDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        code: string;
         displayOrder: number;
+        code: string;
     }>;
     remove(id: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        code: string;
         displayOrder: number;
+        code: string;
     }>;
 }

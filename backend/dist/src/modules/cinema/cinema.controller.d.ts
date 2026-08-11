@@ -12,8 +12,8 @@ export declare class CinemaController {
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            code: string;
             displayOrder: number;
+            code: string;
         };
         halls: {
             id: string;
@@ -22,13 +22,13 @@ export declare class CinemaController {
         }[];
     } & {
         id: string;
-        phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        cityId: string;
         address: string;
+        phone: string | null;
         amenities: string[];
+        cityId: string;
     })[]>;
     findOneCinema(id: string): Promise<{
         city: {
@@ -36,47 +36,47 @@ export declare class CinemaController {
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            code: string;
             displayOrder: number;
+            code: string;
         };
         halls: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            cinemaId: string;
             screenType: import(".prisma/client").$Enums.ScreenType;
             roomMatrix: import("@prisma/client/runtime/library").JsonValue;
+            cinemaId: string;
         }[];
     } & {
         id: string;
-        phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        cityId: string;
         address: string;
+        phone: string | null;
         amenities: string[];
+        cityId: string;
     }>;
     createCinema(createCinemaDto: CreateCinemaDto): Promise<{
         id: string;
-        phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        cityId: string;
         address: string;
+        phone: string | null;
         amenities: string[];
+        cityId: string;
     }>;
     updateCinema(id: string, updateCinemaDto: UpdateCinemaDto): Promise<{
         id: string;
-        phone: string | null;
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        cityId: string;
         address: string;
+        phone: string | null;
         amenities: string[];
+        cityId: string;
     }>;
     deleteCinema(id: string): Promise<{
         success: boolean;
@@ -87,9 +87,9 @@ export declare class CinemaController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        cinemaId: string;
         screenType: import(".prisma/client").$Enums.ScreenType;
         roomMatrix: import("@prisma/client/runtime/library").JsonValue;
+        cinemaId: string;
     }>;
     deleteHall(id: string): Promise<{
         success: boolean;
@@ -107,8 +107,8 @@ export declare class CinemaController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
-        cinemaId: string;
         screenType: import(".prisma/client").$Enums.ScreenType;
         roomMatrix: import("@prisma/client/runtime/library").JsonValue;
+        cinemaId: string;
     }>;
 }

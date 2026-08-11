@@ -8,13 +8,13 @@ export declare class ShowtimeService {
     constructor(prisma: PrismaService, redisService: RedisService);
     create(createShowtimeDto: CreateShowtimeDto): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        cinemaId: string;
         startTime: Date;
         endTime: Date;
         basePrice: number;
-        createdAt: Date;
-        updatedAt: Date;
         movieId: string;
-        cinemaId: string;
         hallId: string;
     }>;
     findAll(movieId?: string, cinemaId?: string, date?: string): Promise<({
@@ -38,13 +38,13 @@ export declare class ShowtimeService {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        cinemaId: string;
         startTime: Date;
         endTime: Date;
         basePrice: number;
-        createdAt: Date;
-        updatedAt: Date;
         movieId: string;
-        cinemaId: string;
         hallId: string;
     })[]>;
     getShowtimeSeats(showtimeId: string): Promise<{
@@ -56,12 +56,12 @@ export declare class ShowtimeService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            type: import(".prisma/client").$Enums.SeatType;
+            expiresAt: Date | null;
             col: number;
             row: string;
             showtimeId: string;
             seatId: string;
-            type: import(".prisma/client").$Enums.SeatType;
-            expiresAt: Date | null;
         }[];
         movie: {
             title: string;
@@ -75,13 +75,13 @@ export declare class ShowtimeService {
             roomMatrix: import("@prisma/client/runtime/library").JsonValue;
         };
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        cinemaId: string;
         startTime: Date;
         endTime: Date;
         basePrice: number;
-        createdAt: Date;
-        updatedAt: Date;
         movieId: string;
-        cinemaId: string;
         hallId: string;
     }>;
 }
