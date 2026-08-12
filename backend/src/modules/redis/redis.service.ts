@@ -12,6 +12,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   // In-memory fallback map cho môi trường dev khi Redis chưa sẵn sàng
   private readonly memoryStore = new Map<string, { value: string; expiresAt: number }>();
 
+  private onSeatExpiredCallback: ((showtimeId: string, seatId: string) => void) | null = null;
+  private fallbackInterval: NodeJS.Timeout | null = null;
+
   constructor(private readonly configService: ConfigService) {}
 
   onModuleInit() {
@@ -38,10 +41,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         this.setupKeyspaceSubscriber(host, port);
       }).catch((err) => {
         this.logger.warn(`Redis connection failed: ${err.message}. Sử dụng In-Memory Fallback.`);
+        this.setupFallbackInterval();
       });
     } catch (error) {
       this.logger.warn('Sử dụng In-Memory Fallback Store cho Redis');
+      this.setupFallbackInterval();
     }
+  }
+
+  setSeatExpiredCallback(cb: (showtimeId: string, seatId: string) => void) {
+    this.onSeatExpiredCallback = cb;
   }
 
   private setupKeyspaceSubscriber(host: string, port: number) {
@@ -51,13 +60,47 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         // Bật keyspace notifications cho các key hết hạn (Ex)
         this.client?.config('SET', 'notify-keyspace-events', 'Ex').catch(() => {});
         this.subClient?.subscribe('__keyevent@0__:expired').catch(() => {});
+        
+        this.subClient?.on('message', (channel, message) => {
+          if (channel === '__keyevent@0__:expired' && message.startsWith('lock:seat:')) {
+            const parts = message.split(':');
+            if (parts.length >= 4) {
+              const showtimeId = parts[2];
+              const seatId = parts[3];
+              if (this.onSeatExpiredCallback) {
+                this.onSeatExpiredCallback(showtimeId, seatId);
+              }
+            }
+          }
+        });
       }).catch(() => {});
     } catch (e) {}
+  }
+
+  private setupFallbackInterval() {
+    if (this.fallbackInterval) return;
+    this.fallbackInterval = setInterval(() => {
+      const now = Date.now();
+      for (const [key, data] of this.memoryStore.entries()) {
+        if (data.expiresAt <= now) {
+          this.memoryStore.delete(key);
+          if (key.startsWith('lock:seat:')) {
+            const parts = key.split(':');
+            if (parts.length >= 4 && this.onSeatExpiredCallback) {
+              this.onSeatExpiredCallback(parts[2], parts[3]);
+            }
+          }
+        }
+      }
+    }, 1000); // Kiểm tra mỗi giây
   }
 
   onModuleDestroy() {
     this.client?.disconnect();
     this.subClient?.disconnect();
+    if (this.fallbackInterval) {
+      clearInterval(this.fallbackInterval);
+    }
   }
 
   /**

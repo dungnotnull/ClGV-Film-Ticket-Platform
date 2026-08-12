@@ -8,7 +8,7 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Injectable, Logger } from '@nestjs/common';
+import { OnModuleInit, Injectable, Logger } from '@nestjs/common';
 import { RedisService } from '../redis/redis.service';
 
 @WebSocketGateway({
@@ -17,13 +17,20 @@ import { RedisService } from '../redis/redis.service';
   },
 })
 @Injectable()
-export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer()
   server: Server;
 
   private readonly logger = new Logger(WebsocketGateway.name);
 
   constructor(private readonly redisService: RedisService) {}
+
+  onModuleInit() {
+    this.redisService.setSeatExpiredCallback((showtimeId, seatId) => {
+      this.logger.log(`Redis Keyspace Notification: Ghế ${seatId} suất ${showtimeId} đã hết hạn khóa. Broadcast AVAILABLE.`);
+      this.broadcastSeatState(showtimeId, seatId, 'AVAILABLE');
+    });
+  }
 
   handleConnection(client: Socket) {
     this.logger.log(`Client kết nối Socket.io: ${client.id}`);
