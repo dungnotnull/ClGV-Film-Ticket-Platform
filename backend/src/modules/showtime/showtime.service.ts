@@ -107,12 +107,28 @@ export class ShowtimeService {
               const defaultModifier = SEAT_TYPE_PRICE_MODIFIERS[seat.type] || 1.0;
               const priceModifier = seat.priceModifier && seat.priceModifier !== 1.0 ? seat.priceModifier : defaultModifier;
 
+              let rowVal = seat.row;
+              let colVal = seat.col;
+              if (rowVal === undefined || colVal === undefined) {
+                const match = seat.id ? seat.id.match(/^([a-zA-Z]+)(\d+)$/) : null;
+                if (match) {
+                  rowVal = rowVal ?? match[1].toUpperCase();
+                  colVal = colVal ?? parseInt(match[2], 10);
+                } else {
+                  rowVal = rowVal ?? 'A';
+                  colVal = colVal ?? 1;
+                }
+              }
+
+              const validTypes = ['STANDARD', 'VIP', 'COUPLE', 'ACCESSIBLE', 'EMPTY_SPACE'];
+              let seatType = validTypes.includes(seat.type) ? seat.type : 'STANDARD';
+
               seatsToCreate.push({
                 showtimeId: showtime.id,
                 seatId: seat.id,
-                row: seat.row,
-                col: seat.col,
-                type: seat.type,
+                row: rowVal,
+                col: colVal,
+                type: seatType,
                 status: seat.isBlocked ? SeatStatus.BLOCKED : SeatStatus.AVAILABLE,
                 priceModifier,
               });
