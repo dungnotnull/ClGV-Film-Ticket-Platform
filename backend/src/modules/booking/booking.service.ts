@@ -37,6 +37,10 @@ export class BookingService {
       throw new NotFoundException(`Không tìm thấy suất chiếu ID: ${showtimeId}`);
     }
 
+    if (new Date(showtime.startTime) < new Date()) {
+      throw new BadRequestException('Suất chiếu này đã bắt đầu hoặc đã kết thúc, không thể đặt vé nữa.');
+    }
+
     // Sửa Bug 6: Kiểm tra trạng thái ghế thực tế từ Database PostgreSQL trước khi giữ
     const existingSeats = (await this.prisma.showtimeSeat.findMany({
       where: {
@@ -123,6 +127,10 @@ export class BookingService {
       });
       if (!showtime) {
         throw new NotFoundException('Suất chiếu không tồn tại');
+      }
+
+      if (new Date(showtime.startTime) < new Date()) {
+        throw new BadRequestException('Suất chiếu này đã bắt đầu hoặc đã kết thúc, không thể thanh toán.');
       }
 
       // 2. Lock hàng ghế PostgreSQL bằng SELECT FOR UPDATE
