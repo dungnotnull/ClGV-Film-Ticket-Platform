@@ -45,9 +45,9 @@ export default async function Home() {
 
         {/* Live Screening Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md mb-6 shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+          {/* <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" /> */}
           <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-[#faf8f5]">
-            ĐANG TRÌNH CHIẾU · HỆ THỐNG PHÒNG CHIẾU IMAX LASER & 4DX
+            HỆ THỐNG PHÒNG CHIẾU IMAX LASER & 4DX
           </span>
         </div>
 

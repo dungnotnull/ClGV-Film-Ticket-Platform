@@ -133,7 +133,7 @@ export const Header = () => {
                 )}
 
                 <DropdownMenuItem
-                  onClick={() => router.push('/user/profile')}
+                  onClick={() => router.push('/user')}
                   className="cursor-pointer text-xs hover:bg-[#302927]"
                 >
                   <User className="mr-2 h-4 w-4" />

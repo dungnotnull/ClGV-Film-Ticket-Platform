@@ -5,6 +5,7 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
+  phone?: string;
   role: 'CUSTOMER' | 'ADMIN' | 'SCANNER';
   membershipTier?: 'MEMBER' | 'U22_FANC' | 'VIP' | 'VVIP';
   points?: number;

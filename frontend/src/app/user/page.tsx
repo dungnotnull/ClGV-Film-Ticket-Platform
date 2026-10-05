@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,19 +11,27 @@ import Link from 'next/link';
 export default function UserProfilePage() {
   const { user, updateUser } = useAuthStore();
 
-  const [fullName, setFullName] = useState(user?.fullName || 'Linh Hà');
-  const [email, setEmail] = useState(user?.email || 'linh.ha@example.com');
-  const [phone, setPhone] = useState('090 123 4567');
+  const [fullName, setFullName] = useState(user?.fullName || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.phone || '090 123 4567');
   const [dob, setDob] = useState('18 / 10 / 1998');
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      if (user.fullName) setFullName(user.fullName);
+      if (user.email) setEmail(user.email);
+      if (user.phone) setPhone(user.phone);
+    }
+  }, [user]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
 
     // Simulate saving profile update
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    updateUser({ fullName });
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    updateUser({ fullName, phone });
     setIsSaving(false);
     toast.success('Cập nhật thông tin hồ sơ thành công!');
   };
