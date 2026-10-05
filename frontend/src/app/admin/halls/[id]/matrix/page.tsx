@@ -5,7 +5,7 @@ import { api } from '@/lib/axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Save, ChevronLeft, LayoutGrid } from 'lucide-react';
+import { Save, ChevronLeft, LayoutGrid, MonitorPlay, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -52,7 +52,6 @@ export default function HallMatrixBuilderPage({ params }: { params: Promise<{ id
       const rowArr = [];
       const rowChar = String.fromCharCode(65 + i); // A, B, C...
       for (let j = 0; j < c; j++) {
-        // Default standard seat, leave some aisle manually later
         rowArr.push({
           id: `${rowChar}${j + 1}`,
           type: 'STANDARD',
@@ -105,96 +104,150 @@ export default function HallMatrixBuilderPage({ params }: { params: Promise<{ id
 
   const getSeatColor = (type: string) => {
     switch (type) {
-      case 'STANDARD': return 'bg-blue-500/80 hover:bg-blue-400';
-      case 'VIP': return 'bg-red-500/80 hover:bg-red-400';
-      case 'COUPLE': return 'bg-pink-500/80 hover:bg-pink-400';
-      case 'EMPTY': return 'bg-transparent border border-dashed border-border hover:bg-muted';
-      default: return 'bg-gray-500 hover:bg-gray-400';
+      case 'STANDARD': 
+        return 'bg-[#302927] border border-[#4a423d] text-[#faf8f5] hover:border-[#ff4b72] hover:bg-[#3d3432]';
+      case 'VIP': 
+        return 'bg-[#ff4b72] text-white shadow-md shadow-[#ff4b72]/30 hover:bg-[#ff6584]';
+      case 'COUPLE': 
+        return 'bg-[#ff8fa3] text-[#1f1a18] font-bold shadow-md shadow-[#ff8fa3]/30 hover:bg-[#ffb3c1]';
+      case 'EMPTY': 
+        return 'bg-transparent border border-dashed border-[#4a423d] text-transparent hover:border-[#ff4b72]/50';
+      default: 
+        return 'bg-[#302927] text-[#afa49b]';
     }
   };
 
-  if (loading) return <div className="p-10 text-center">Đang tải cấu hình...</div>;
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-[#afa49b]">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-6 h-6 border-2 border-[#ff4b72] border-t-transparent rounded-full animate-spin" />
+          <span>Đang tải cấu hình sơ đồ ghế...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="flex justify-between items-center bg-card p-4 rounded-lg border border-border shadow-md">
+      {/* Top action header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#27211f] p-5 rounded-2xl border border-[#4a423d] shadow-xl">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <LayoutGrid className="text-primary w-6 h-6" />
-            Cấu hình sơ đồ ghế
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {hallData?.cinemaName} - <span className="font-bold text-white">{hallData?.name}</span> ({hallData?.screenType})
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#ff4b72]/15 border border-[#ff4b72]/30 flex items-center justify-center text-[#ff4b72]">
+              <LayoutGrid className="w-4 h-4" />
+            </div>
+            <h1 className="text-xl lg:text-2xl font-bold text-[#faf8f5]">Cấu Hình Sơ Đồ Ghế</h1>
+          </div>
+          <p className="text-sm text-[#afa49b] mt-1 ml-10">
+            {hallData?.cinemaName} - <span className="font-bold text-[#faf8f5]">{hallData?.name}</span> ({hallData?.screenType})
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link href="/admin/cinemas">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 border-[#4a423d] text-[#d1c7ba] hover:bg-[#302927] hover:text-white rounded-xl">
               <ChevronLeft className="w-4 h-4" /> Quay lại
             </Button>
           </Link>
-          <Button onClick={saveMatrix} className="gap-2">
+          <Button onClick={saveMatrix} className="gap-2 bg-[#ff4b72] hover:bg-[#ff6584] text-white rounded-xl shadow-lg shadow-[#ff4b72]/20 font-medium">
             <Save className="w-4 h-4" /> Lưu cấu hình
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Toolbar sidebar */}
-        <div className="bg-card p-6 rounded-lg border border-border space-y-6 shadow-md h-fit">
-          <h3 className="font-bold text-lg border-b border-border pb-2">Kích thước ma trận</h3>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Số hàng ngang (Rows)</Label>
-              <Input type="number" value={rows} onChange={e => setRows(Number(e.target.value))} min={1} max={26} />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Toolbar panel */}
+        <div className="bg-[#27211f] p-5 rounded-2xl border border-[#4a423d] space-y-6 shadow-xl h-fit">
+          <div>
+            <h3 className="font-mono text-xs uppercase tracking-wider text-[#d1c7ba] pb-2 border-b border-[#4a423d]">
+              Kích thước ma trận
+            </h3>
+            <div className="space-y-3 mt-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-[#afa49b]">Số hàng ngang (Rows)</Label>
+                <Input 
+                  type="number" 
+                  value={rows} 
+                  onChange={e => setRows(Number(e.target.value))} 
+                  min={1} 
+                  max={26} 
+                  className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl h-10"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-[#afa49b]">Số cột dọc (Cols)</Label>
+                <Input 
+                  type="number" 
+                  value={cols} 
+                  onChange={e => setCols(Number(e.target.value))} 
+                  min={1} 
+                  max={50} 
+                  className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl h-10"
+                />
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full border-[#4a423d] text-[#d1c7ba] hover:bg-[#302927] hover:text-white rounded-xl text-xs mt-2" 
+                onClick={handleResize}
+              >
+                Tạo lại lưới
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label>Số cột dọc (Cols)</Label>
-              <Input type="number" value={cols} onChange={e => setCols(Number(e.target.value))} min={1} max={50} />
-            </div>
-            <Button variant="secondary" className="w-full" onClick={handleResize}>Tạo lại lưới</Button>
           </div>
 
-          <div className="pt-6 mt-6 border-t border-border">
-            <h3 className="font-bold text-lg mb-4">Chú thích</h3>
+          <div className="pt-4 border-t border-[#4a423d]">
+            <h3 className="font-mono text-xs uppercase tracking-wider text-[#d1c7ba] mb-4">Chú thích loại ghế</h3>
             <div className="space-y-3">
-              <div className="flex items-center gap-3"><div className="w-6 h-6 rounded bg-blue-500/80"></div> <span className="text-sm">Ghế Thường (STANDARD)</span></div>
-              <div className="flex items-center gap-3"><div className="w-6 h-6 rounded bg-red-500/80"></div> <span className="text-sm">Ghế VIP</span></div>
-              <div className="flex items-center gap-3"><div className="w-6 h-6 rounded bg-pink-500/80"></div> <span className="text-sm">Ghế Đôi (COUPLE)</span></div>
-              <div className="flex items-center gap-3"><div className="w-6 h-6 rounded border border-dashed border-border"></div> <span className="text-sm">Lối đi / Trống (EMPTY)</span></div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-t-md rounded-b-sm bg-[#302927] border border-[#4a423d]" /> 
+                <span className="text-xs text-[#faf8f5]">Ghế Thường (STANDARD)</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-t-md rounded-b-sm bg-[#ff4b72] shadow-sm shadow-[#ff4b72]/30" /> 
+                <span className="text-xs text-[#faf8f5]">Ghế VIP</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-t-md rounded-b-sm bg-[#ff8fa3]" /> 
+                <span className="text-xs text-[#faf8f5]">Ghế Đôi (COUPLE)</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-t-md rounded-b-sm border border-dashed border-[#4a423d]" /> 
+                <span className="text-xs text-[#afa49b]">Lối đi / Trống (EMPTY)</span>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-4 italic">
-              * Click vào từng ô trên sơ đồ để thay đổi loại ghế.
+            <p className="text-[11px] text-[#afa49b] mt-5 leading-relaxed bg-[#1f1a18] p-3 rounded-xl border border-[#4a423d]">
+              * Click vào từng ghế trên sơ đồ để chuyển đổi: Thường &rarr; VIP &rarr; Đôi &rarr; Trống.
             </p>
           </div>
         </div>
 
         {/* Matrix Canvas */}
-        <div className="md:col-span-3 bg-card p-6 rounded-lg border border-border shadow-md overflow-x-auto">
-          
-          <div className="w-full max-w-4xl mx-auto mb-12">
-            <div className="h-8 bg-gradient-to-b from-primary/30 to-transparent border-t-4 border-primary rounded-t-[50%] flex items-center justify-center shadow-[0_0_15px_rgba(var(--primary),0.3)]">
-              <span className="text-muted-foreground text-sm font-bold tracking-[0.5em] uppercase">Màn Hình</span>
+        <div className="lg:col-span-3 bg-[#27211f] p-6 lg:p-8 rounded-2xl border border-[#4a423d] shadow-xl overflow-x-auto">
+          {/* Screen */}
+          <div className="w-full max-w-2xl mx-auto mb-12">
+            <div className="h-9 bg-gradient-to-b from-[#ff4b72]/30 via-[#ff4b72]/10 to-transparent border-t-2 border-[#ff4b72] rounded-t-[50%] flex items-center justify-center shadow-[0_0_20px_rgba(255,75,114,0.3)]">
+              <span className="text-[#ff8fa3] text-xs font-mono font-bold tracking-[0.5em] uppercase">Màn Hình Chiếu Phim</span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 min-w-max mx-auto items-center">
+          {/* Seat Grid */}
+          <div className="flex flex-col gap-2.5 min-w-max mx-auto items-center py-4">
             {grid.map((rowArr, rIndex) => (
-              <div key={rIndex} className="flex gap-2 items-center">
-                <div className="w-6 text-center text-sm font-bold text-muted-foreground">
+              <div key={rIndex} className="flex gap-2.5 items-center">
+                <div className="w-6 text-center text-xs font-mono font-bold text-[#afa49b]">
                   {String.fromCharCode(65 + rIndex)}
                 </div>
                 {rowArr.map((cell, cIndex) => (
                   <button
                     key={cIndex}
                     onClick={() => toggleSeatType(rIndex, cIndex)}
-                    className={`w-8 h-8 md:w-10 md:h-10 rounded-t-lg rounded-b-sm flex items-center justify-center text-[10px] md:text-xs font-bold transition-all ${getSeatColor(cell.type)}`}
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-t-lg rounded-b-sm flex items-center justify-center text-[10px] font-mono font-bold transition-all ${getSeatColor(cell.type)}`}
                     title={`Ghế ${cell.id} - ${cell.type}`}
                   >
                     {cell.type !== 'EMPTY' ? cIndex + 1 : ''}
                   </button>
                 ))}
-                <div className="w-6 text-center text-sm font-bold text-muted-foreground">
+                <div className="w-6 text-center text-xs font-mono font-bold text-[#afa49b]">
                   {String.fromCharCode(65 + rIndex)}
                 </div>
               </div>

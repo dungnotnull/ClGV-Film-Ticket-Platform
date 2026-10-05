@@ -18,15 +18,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Film, Clock, Calendar, UploadCloud } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminMoviesPage() {
-  const [movies, setMovies] = useState([]);
+  const [movies, setMovies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Modals state
@@ -184,26 +183,39 @@ export default function AdminMoviesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold border-l-4 border-primary pl-4">Quản Lý Phim</h1>
-        <Button className="gap-2" onClick={() => { resetForm(); setIsAddOpen(true); }}>
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#4a423d] pb-6">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#ff4b72]/15 border border-[#ff4b72]/30 flex items-center justify-center text-[#ff4b72]">
+              <Film className="w-4 h-4" />
+            </div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-[#faf8f5] tracking-tight">Quản Lý Phim</h1>
+          </div>
+          <p className="text-sm text-[#afa49b] mt-1 ml-10">Danh sách phim chiếu rạp, thông tin khởi chiếu và trạng thái phát hành</p>
+        </div>
+        <Button 
+          className="gap-2 bg-[#ff4b72] hover:bg-[#ff6584] text-white rounded-xl shadow-lg shadow-[#ff4b72]/20 font-medium transition-all"
+          onClick={() => { resetForm(); setIsAddOpen(true); }}
+        >
           <Plus className="h-4 w-4" /> Thêm phim mới
         </Button>
       </div>
 
-      <div className="flex gap-4 items-center bg-card p-4 rounded-lg border border-border/50">
-        <div className="flex-1 relative">
-          <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center bg-[#27211f] p-4 rounded-2xl border border-[#4a423d]">
+        <div className="flex-1 relative w-full">
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-[#afa49b]" />
           <Input 
-            className="pl-9" 
+            className="pl-10 bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] placeholder:text-[#afa49b] focus:border-[#ff4b72] rounded-xl h-11" 
             placeholder="Tìm theo tên phim hoặc đạo diễn..." 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="w-48">
+        <div className="w-full sm:w-56">
           <select 
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+            className="flex h-11 w-full rounded-xl border border-[#4a423d] bg-[#1f1a18] px-3.5 py-2 text-sm text-[#faf8f5] focus:outline-none focus:border-[#ff4b72]"
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
           >
@@ -214,30 +226,34 @@ export default function AdminMoviesPage() {
         </div>
       </div>
 
-      <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-lg overflow-hidden shadow-2xl">
+      {/* Table Section */}
+      <div className="bg-[#27211f] border border-[#4a423d] rounded-2xl overflow-hidden shadow-xl">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50">
-              <TableHead className="w-[60px]">STT</TableHead>
-              <TableHead>Tên phim</TableHead>
-              <TableHead>Đạo diễn</TableHead>
-              <TableHead>Thể loại</TableHead>
-              <TableHead>Thời lượng</TableHead>
-              <TableHead>Khởi chiếu</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
+            <TableRow className="bg-[#302927] border-b border-[#4a423d] hover:bg-[#302927]">
+              <TableHead className="w-[60px] text-center font-mono text-[11px] uppercase tracking-wider text-[#d1c7ba]">STT</TableHead>
+              <TableHead className="font-mono text-[11px] uppercase tracking-wider text-[#d1c7ba]">Tên phim</TableHead>
+              <TableHead className="font-mono text-[11px] uppercase tracking-wider text-[#d1c7ba]">Đạo diễn</TableHead>
+              <TableHead className="font-mono text-[11px] uppercase tracking-wider text-[#d1c7ba]">Thể loại</TableHead>
+              <TableHead className="font-mono text-[11px] uppercase tracking-wider text-[#d1c7ba]">Thời lượng</TableHead>
+              <TableHead className="font-mono text-[11px] uppercase tracking-wider text-[#d1c7ba]">Khởi chiếu</TableHead>
+              <TableHead className="font-mono text-[11px] uppercase tracking-wider text-[#d1c7ba]">Trạng thái</TableHead>
+              <TableHead className="text-right font-mono text-[11px] uppercase tracking-wider text-[#d1c7ba] pr-6">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
-                  Đang tải dữ liệu...
+                <TableCell colSpan={8} className="text-center py-12 text-[#afa49b]">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-6 h-6 border-2 border-[#ff4b72] border-t-transparent rounded-full animate-spin" />
+                    <span>Đang tải danh sách phim...</span>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (() => {
               const filtered = movies.filter((movie: any) => {
-                const matchSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                const matchSearch = movie.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                                     (movie.director || '').toLowerCase().includes(searchTerm.toLowerCase());
                 const matchStatus = filterStatus === 'ALL' || movie.status === filterStatus;
                 return matchSearch && matchStatus;
@@ -246,35 +262,76 @@ export default function AdminMoviesPage() {
               if (filtered.length === 0) {
                 return (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">Không có phim nào phù hợp</TableCell>
+                    <TableCell colSpan={8} className="text-center py-12 text-[#afa49b]">Không có phim nào phù hợp</TableCell>
                   </TableRow>
                 );
               }
 
               return filtered.map((movie: any, index: number) => (
-                <TableRow key={movie.id}>
-                  <TableCell className="font-medium text-xs text-center">{index + 1}</TableCell>
-                  <TableCell className="font-bold">{movie.title}</TableCell>
-                  <TableCell>{movie.director}</TableCell>
-                  <TableCell>{movie.genres?.join(', ')}</TableCell>
-                  <TableCell>{movie.durationMinutes} phút</TableCell>
-                  <TableCell>{new Date(movie.releaseDate).toLocaleDateString('vi-VN')}</TableCell>
+                <TableRow key={movie.id} className="border-b border-[#4a423d]/50 hover:bg-[#302927]/40 transition-colors">
+                  <TableCell className="font-mono text-xs text-center text-[#afa49b]">{index + 1}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                    <div className="flex items-center gap-3">
+                      {movie.posterUrl ? (
+                        <img src={movie.posterUrl} alt={movie.title} className="w-10 h-14 object-cover rounded-lg border border-[#4a423d]" />
+                      ) : (
+                        <div className="w-10 h-14 bg-[#1f1a18] border border-[#4a423d] rounded-lg flex items-center justify-center text-[#afa49b]">
+                          <Film className="w-4 h-4" />
+                        </div>
+                      )}
+                      <div>
+                        <div className="font-bold text-[#faf8f5]">{movie.title}</div>
+                        {movie.titleOriginal && (
+                          <div className="text-xs text-[#afa49b] italic">{movie.titleOriginal}</div>
+                        )}
+                        <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[#1f1a18] text-[#ff8fa3] border border-[#ff4b72]/30 mt-1 inline-block">
+                          {movie.ageRating || 'P'}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-[#d1c7ba] text-sm">{movie.director}</TableCell>
+                  <TableCell className="text-[#d1c7ba] text-sm max-w-[160px] truncate">{movie.genres?.join(', ') || 'Chưa cập nhật'}</TableCell>
+                  <TableCell className="text-[#d1c7ba] text-sm font-mono">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-[#afa49b]" />
+                      {movie.durationMinutes} ph
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-[#d1c7ba] text-sm font-mono">
+                    <span className="inline-flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-[#afa49b]" />
+                      {new Date(movie.releaseDate).toLocaleDateString('vi-VN')}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${
                       movie.status === 'NOW_SHOWING' 
-                        ? 'bg-green-500/20 text-green-500' 
-                        : 'bg-yellow-500/20 text-yellow-500'
+                        ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' 
+                        : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
                     }`}>
                       {movie.status === 'NOW_SHOWING' ? 'Đang chiếu' : 'Sắp chiếu'}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => openEditModal(movie)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => openDeleteModal(movie)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <TableCell className="text-right pr-6">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-[#ff8fa3] hover:text-[#ff4b72] hover:bg-[#ff4b72]/15 rounded-lg" 
+                        onClick={() => openEditModal(movie)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-rose-400 hover:text-rose-300 hover:bg-rose-500/15 rounded-lg" 
+                        onClick={() => openDeleteModal(movie)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ));
@@ -285,50 +342,62 @@ export default function AdminMoviesPage() {
 
       {/* Add Movie Modal */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-y-auto bg-[#27211f] border border-[#4a423d] text-[#faf8f5] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Thêm phim mới</DialogTitle>
-            <DialogDescription>
-              Nhập thông tin chi tiết để thêm phim mới vào hệ thống.
+            <DialogTitle className="text-xl font-bold text-[#faf8f5]">Thêm phim mới</DialogTitle>
+            <DialogDescription className="text-sm text-[#afa49b]">
+              Nhập thông tin chi tiết để thêm phim mới vào hệ thống rạp ClGV.
             </DialogDescription>
           </DialogHeader>
           <MovieFormFields formData={formData} setFormData={setFormData} />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddOpen(false)}>Hủy</Button>
-            <Button onClick={handleAddMovie}>Lưu phim</Button>
+          <DialogFooter className="gap-2 sm:gap-0 mt-6 pt-4 border-t border-[#4a423d]">
+            <Button variant="outline" className="border-[#4a423d] text-[#d1c7ba] hover:bg-[#302927] hover:text-white rounded-xl" onClick={() => setIsAddOpen(false)}>
+              Hủy
+            </Button>
+            <Button className="bg-[#ff4b72] hover:bg-[#ff6584] text-white font-medium rounded-xl shadow-lg shadow-[#ff4b72]/20" onClick={handleAddMovie}>
+              Lưu phim
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit Movie Modal */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-y-auto bg-[#27211f] border border-[#4a423d] text-[#faf8f5] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Cập nhật phim</DialogTitle>
-            <DialogDescription>
-              Thay đổi thông tin cho phim {selectedMovie?.title}.
+            <DialogTitle className="text-xl font-bold text-[#faf8f5]">Cập nhật phim</DialogTitle>
+            <DialogDescription className="text-sm text-[#afa49b]">
+              Thay đổi thông tin cho phim <strong className="text-[#faf8f5]">{selectedMovie?.title}</strong>.
             </DialogDescription>
           </DialogHeader>
           <MovieFormFields formData={formData} setFormData={setFormData} />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Hủy</Button>
-            <Button onClick={handleEditMovie}>Cập nhật</Button>
+          <DialogFooter className="gap-2 sm:gap-0 mt-6 pt-4 border-t border-[#4a423d]">
+            <Button variant="outline" className="border-[#4a423d] text-[#d1c7ba] hover:bg-[#302927] hover:text-white rounded-xl" onClick={() => setIsEditOpen(false)}>
+              Hủy
+            </Button>
+            <Button className="bg-[#ff4b72] hover:bg-[#ff6584] text-white font-medium rounded-xl shadow-lg shadow-[#ff4b72]/20" onClick={handleEditMovie}>
+              Cập nhật
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Movie Modal */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] bg-[#27211f] border border-[#4a423d] text-[#faf8f5] rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-destructive">Xác nhận xóa phim</DialogTitle>
-            <DialogDescription>
-              Bạn có chắc chắn muốn xóa phim <strong>{selectedMovie?.title}</strong>? Hành động này không thể hoàn tác.
+            <DialogTitle className="text-rose-400 font-bold text-lg">Xác nhận xóa phim</DialogTitle>
+            <DialogDescription className="text-sm text-[#afa49b] mt-2">
+              Bạn có chắc chắn muốn xóa phim <strong className="text-[#faf8f5]">{selectedMovie?.title}</strong>? Hành động này sẽ loại bỏ hoàn toàn các liên kết lịch chiếu liên quan.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Hủy</Button>
-            <Button variant="destructive" onClick={handleDeleteMovie}>Xóa phim</Button>
+          <DialogFooter className="mt-6 gap-2 sm:gap-0">
+            <Button variant="outline" className="border-[#4a423d] text-[#d1c7ba] hover:bg-[#302927] hover:text-white rounded-xl" onClick={() => setIsDeleteOpen(false)}>
+              Hủy
+            </Button>
+            <Button className="bg-rose-600 hover:bg-rose-500 text-white font-medium rounded-xl shadow-lg shadow-rose-600/20" onClick={handleDeleteMovie}>
+              Xóa phim
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -336,7 +405,7 @@ export default function AdminMoviesPage() {
   );
 }
 
-// Extracted form fields component to avoid duplication
+// Extracted form fields component
 function MovieFormFields({ formData, setFormData }: { formData: any, setFormData: any }) {
   const [uploading, setUploading] = useState(false);
 
@@ -369,83 +438,140 @@ function MovieFormFields({ formData, setFormData }: { formData: any, setFormData
   };
 
   return (
-    <div className="grid gap-4 py-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Tên phim</Label>
-          <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="VD: Mai" />
+    <div className="grid gap-4 py-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Tên phim</Label>
+          <Input 
+            className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl"
+            value={formData.title} 
+            onChange={e => setFormData({...formData, title: e.target.value})} 
+            placeholder="VD: Mai" 
+          />
         </div>
-        <div className="space-y-2">
-          <Label>Tên gốc</Label>
-          <Input value={formData.titleOriginal} onChange={e => setFormData({...formData, titleOriginal: e.target.value})} placeholder="VD: Mai (2024)" />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Đạo diễn</Label>
-          <Input value={formData.director} onChange={e => setFormData({...formData, director: e.target.value})} placeholder="Trấn Thành" />
-        </div>
-        <div className="space-y-2">
-          <Label>Diễn viên</Label>
-          <Input value={formData.cast} onChange={e => setFormData({...formData, cast: e.target.value})} placeholder="Phương Anh Đào..." />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Thể loại (cách nhau bởi dấu phẩy)</Label>
-          <Input value={formData.genres} onChange={e => setFormData({...formData, genres: e.target.value})} />
-        </div>
-        <div className="space-y-2">
-          <Label>Thời lượng (phút)</Label>
-          <Input type="number" value={formData.durationMinutes} onChange={e => setFormData({...formData, durationMinutes: Number(e.target.value)})} />
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Tên gốc</Label>
+          <Input 
+            className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl"
+            value={formData.titleOriginal} 
+            onChange={e => setFormData({...formData, titleOriginal: e.target.value})} 
+            placeholder="VD: Mai (2024)" 
+          />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Ngày khởi chiếu</Label>
-          <Input type="date" value={formData.releaseDate} onChange={e => setFormData({...formData, releaseDate: e.target.value})} />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Đạo diễn</Label>
+          <Input 
+            className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl"
+            value={formData.director} 
+            onChange={e => setFormData({...formData, director: e.target.value})} 
+            placeholder="Trấn Thành" 
+          />
         </div>
-        <div className="space-y-2">
-          <Label>Trạng thái (Tự động)</Label>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Diễn viên</Label>
+          <Input 
+            className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl"
+            value={formData.cast} 
+            onChange={e => setFormData({...formData, cast: e.target.value})} 
+            placeholder="Phương Anh Đào, Tuấn Trần..." 
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Thể loại (cách nhau bởi dấu phẩy)</Label>
+          <Input 
+            className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl"
+            value={formData.genres} 
+            onChange={e => setFormData({...formData, genres: e.target.value})} 
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Thời lượng (phút)</Label>
+          <Input 
+            type="number" 
+            className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl"
+            value={formData.durationMinutes} 
+            onChange={e => setFormData({...formData, durationMinutes: Number(e.target.value)})} 
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Ngày khởi chiếu</Label>
+          <Input 
+            type="date" 
+            className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl"
+            value={formData.releaseDate} 
+            onChange={e => setFormData({...formData, releaseDate: e.target.value})} 
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Độ tuổi / Phân loại</Label>
           <select 
-            className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-muted-foreground ring-offset-background cursor-not-allowed"
-            value={formData.status} 
-            disabled
+            className="flex h-10 w-full rounded-xl border border-[#4a423d] bg-[#1f1a18] px-3.5 py-2 text-sm text-[#faf8f5] focus:outline-none focus:border-[#ff4b72]"
+            value={formData.ageRating} 
+            onChange={e => setFormData({...formData, ageRating: e.target.value})}
           >
-            <option value="NOW_SHOWING">Đang chiếu</option>
-            <option value="COMING_SOON">Sắp chiếu</option>
+            <option value="P">P - Phổ biến mọi lứa tuổi</option>
+            <option value="K">K - Dưới 13 tuổi có người bảo hộ</option>
+            <option value="T13">T13 - Khán giả từ 13 tuổi trở lên</option>
+            <option value="T16">T16 - Khán giả từ 16 tuổi trở lên</option>
+            <option value="T18">T18 - Khán giả từ 18 tuổi trở lên</option>
+            <option value="C">C - Cấm phổ biến</option>
           </select>
         </div>
       </div>
-      <div className="space-y-2">
-        <Label>Ảnh Poster</Label>
-        <div className="flex flex-col gap-3">
+
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Ảnh Poster</Label>
+        <div className="flex flex-col sm:flex-row gap-4 items-start">
           {formData.posterUrl && (
-            <img src={formData.posterUrl} alt="Poster preview" className="w-32 h-48 object-cover rounded-md border border-border" />
+            <img src={formData.posterUrl} alt="Poster preview" className="w-24 h-36 object-cover rounded-xl border border-[#4a423d] shadow-md" />
           )}
-          <div className="flex gap-2 items-center">
+          <div className="flex-1 w-full space-y-2">
+            <div className="flex gap-2 items-center">
+              <Input 
+                type="file" 
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleImageUpload}
+                disabled={uploading}
+                className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] file:bg-[#302927] file:text-[#faf8f5] file:border-0 file:rounded-lg file:mr-3 file:py-1 file:px-3 rounded-xl cursor-pointer"
+              />
+              {uploading && <span className="text-xs text-[#ff4b72] animate-pulse">Đang tải...</span>}
+            </div>
             <Input 
-              type="file" 
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={handleImageUpload}
-              disabled={uploading}
-              className="flex-1 cursor-pointer"
+              value={formData.posterUrl} 
+              onChange={e => setFormData({...formData, posterUrl: e.target.value})} 
+              placeholder="Hoặc dán URL ảnh trực tiếp..." 
+              className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] text-xs focus:border-[#ff4b72] rounded-xl"
             />
-            {uploading && <span className="text-sm text-muted-foreground animate-pulse">Đang tải...</span>}
           </div>
         </div>
       </div>
-      <div className="space-y-2">
-        <Label>Link Trailer (Youtube)</Label>
-        <Input value={formData.trailerUrl} onChange={e => setFormData({...formData, trailerUrl: e.target.value})} placeholder="https://youtube.com/..." />
+
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Link Trailer (Youtube)</Label>
+        <Input 
+          className="bg-[#1f1a18] border-[#4a423d] text-[#faf8f5] focus:border-[#ff4b72] rounded-xl"
+          value={formData.trailerUrl} 
+          onChange={e => setFormData({...formData, trailerUrl: e.target.value})} 
+          placeholder="https://youtube.com/watch?v=..." 
+        />
       </div>
-      <div className="space-y-2">
-        <Label>Mô tả nội dung</Label>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold uppercase tracking-wider text-[#d1c7ba]">Mô tả nội dung</Label>
         <textarea 
-          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+          className="flex min-h-[90px] w-full rounded-xl border border-[#4a423d] bg-[#1f1a18] px-3.5 py-2.5 text-sm text-[#faf8f5] focus:outline-none focus:border-[#ff4b72] placeholder:text-[#afa49b]"
           value={formData.description}
           onChange={e => setFormData({...formData, description: e.target.value})}
-          placeholder="Nội dung phim..."
+          placeholder="Tóm tắt cốt truyện phim..."
         />
       </div>
     </div>
